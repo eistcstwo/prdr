@@ -90,8 +90,8 @@ const PAIRS = getPairs();
 const API_URL = "https://10.191.171.12:5443/EISHOME/prDrSync/checkSyncIPSpecific/";
 
 const GROUPS = [
-  { id: "a", label: "SUBNET A", sublabel: "10.188.24.x  /  10.177.40.x", prefix: "10.188.24." },
-  { id: "b", label: "SUBNET B", sublabel: "10.188.25.x  /  10.177.41.x", prefix: "10.188.25." },
+  { id: "a", label: "SUBSET A", sublabel: "10.188.24.x  /  10.177.40.x", prefix: "10.188.24." },
+  { id: "b", label: "SUBSET B", sublabel: "10.188.25.x  /  10.177.41.x", prefix: "10.188.25." },
 ];
 
 const C = {
