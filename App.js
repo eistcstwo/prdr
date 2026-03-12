@@ -1,93 +1,26 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 
-const ALL_IPS = [
-  "10.177.40.101","10.177.40.102","10.177.40.103","10.177.40.104","10.177.40.105",
-  "10.177.40.106","10.177.40.10","10.177.40.110","10.177.40.111","10.177.40.112",
-  "10.177.40.113","10.177.40.114","10.177.40.115","10.177.40.11","10.177.40.12",
-  "10.177.40.131","10.177.40.132","10.177.40.133","10.177.40.134","10.177.40.135",
-  "10.177.40.13","10.177.40.141","10.177.40.142","10.177.40.143","10.177.40.144",
-  "10.177.40.145","10.177.40.146","10.177.40.14","10.177.40.155","10.177.40.156",
-  "10.177.40.157","10.177.40.158","10.177.40.159","10.177.40.15","10.177.40.160",
-  "10.177.40.163","10.177.40.164","10.177.40.165","10.177.40.166","10.177.40.167",
-  "10.177.40.168","10.177.40.169","10.177.40.170","10.177.40.171","10.177.40.173",
-  "10.177.40.174","10.177.40.175","10.177.40.176","10.177.40.177","10.177.40.178",
-  "10.177.40.190","10.177.40.191","10.177.40.192","10.177.40.194","10.177.40.195",
-  "10.177.40.196","10.177.40.197","10.177.40.230","10.177.40.231","10.177.40.232",
-  "10.177.40.233","10.177.40.234","10.177.40.235","10.177.40.31","10.177.40.32",
-  "10.177.40.33","10.177.40.34","10.177.40.41","10.177.40.42","10.177.40.43",
-  "10.177.40.44","10.177.40.45","10.177.40.55","10.177.40.56","10.177.40.57",
-  "10.177.40.58","10.177.40.59","10.177.40.63","10.177.40.64","10.177.40.65",
-  "10.177.40.66","10.177.40.67","10.177.40.68","10.177.40.69","10.177.40.70",
-  "10.177.40.71","10.177.40.73","10.177.40.74","10.177.40.75","10.177.40.81",
-  "10.177.40.82","10.177.40.83","10.177.40.84","10.177.40.85","10.177.40.86",
-  "10.177.40.87","10.177.40.88","10.177.40.89",
-  "10.177.41.101","10.177.41.102","10.177.41.10","10.177.41.110","10.177.41.111",
-  "10.177.41.112","10.177.41.113","10.177.41.114","10.177.41.115","10.177.41.11",
-  "10.177.41.12","10.177.41.131","10.177.41.132","10.177.41.133","10.177.41.134",
-  "10.177.41.135","10.177.41.13","10.177.41.141","10.177.41.142","10.177.41.143",
-  "10.177.41.144","10.177.41.145","10.177.41.146","10.177.41.14","10.177.41.155",
-  "10.177.41.156","10.177.41.157","10.177.41.158","10.177.41.159","10.177.41.15",
-  "10.177.41.160","10.177.41.163","10.177.41.164","10.177.41.165","10.177.41.166",
-  "10.177.41.168","10.177.41.169","10.177.41.170","10.177.41.171","10.177.41.173",
-  "10.177.41.174","10.177.41.175","10.177.41.176","10.177.41.190","10.177.41.191",
-  "10.177.41.192","10.177.41.194","10.177.41.195","10.177.41.196","10.177.41.197",
-  "10.177.41.20","10.177.41.21","10.177.41.230","10.177.41.231","10.177.41.232",
-  "10.177.41.233","10.177.41.234","10.177.41.31","10.177.41.32","10.177.41.33",
-  "10.177.41.34","10.177.41.41","10.177.41.42","10.177.41.43","10.177.41.44",
-  "10.177.41.45","10.177.41.55","10.177.41.56","10.177.41.57","10.177.41.58",
-  "10.177.41.59","10.177.41.63","10.177.41.64","10.177.41.65","10.177.41.66",
-  "10.177.41.67","10.177.41.68","10.177.41.69","10.177.41.70","10.177.41.71",
-  "10.177.41.73","10.177.41.74","10.177.41.75",
-  "10.188.24.101","10.188.24.102","10.188.24.103","10.188.24.104","10.188.24.105",
-  "10.188.24.106","10.188.24.10","10.188.24.110","10.188.24.111","10.188.24.112",
-  "10.188.24.113","10.188.24.114","10.188.24.115","10.188.24.11","10.188.24.12",
-  "10.188.24.131","10.188.24.132","10.188.24.133","10.188.24.134","10.188.24.135",
-  "10.188.24.13","10.188.24.141","10.188.24.142","10.188.24.143","10.188.24.144",
-  "10.188.24.145","10.188.24.146","10.188.24.14","10.188.24.155","10.188.24.156",
-  "10.188.24.157","10.188.24.158","10.188.24.159","10.188.24.15","10.188.24.160",
-  "10.188.24.163","10.188.24.164","10.188.24.165","10.188.24.166","10.188.24.167",
-  "10.188.24.168","10.188.24.169","10.188.24.170","10.188.24.171","10.188.24.173",
-  "10.188.24.174","10.188.24.175","10.188.24.176","10.188.24.177","10.188.24.178",
-  "10.188.24.190","10.188.24.191","10.188.24.192","10.188.24.194","10.188.24.195",
-  "10.188.24.196","10.188.24.197","10.188.24.230","10.188.24.231","10.188.24.232",
-  "10.188.24.234","10.188.24.31","10.188.24.32","10.188.24.33","10.188.24.34",
-  "10.188.24.41","10.188.24.42","10.188.24.43","10.188.24.44","10.188.24.45",
-  "10.188.24.55","10.188.24.56","10.188.24.57","10.188.24.58","10.188.24.59",
-  "10.188.24.63","10.188.24.64","10.188.24.65","10.188.24.66","10.188.24.67",
-  "10.188.24.68","10.188.24.69","10.188.24.70","10.188.24.71","10.188.24.73",
-  "10.188.24.74","10.188.24.75","10.188.24.77","10.188.24.78",
-  "10.188.25.101","10.188.25.102","10.188.25.10","10.188.25.110","10.188.25.111",
-  "10.188.25.112","10.188.25.113","10.188.25.114","10.188.25.115","10.188.25.11",
-  "10.188.25.12","10.188.25.131","10.188.25.132","10.188.25.133","10.188.25.134",
-  "10.188.25.135","10.188.25.13","10.188.25.141","10.188.25.142","10.188.25.143",
-  "10.188.25.144","10.188.25.145","10.188.25.146","10.188.25.14","10.188.25.155",
-  "10.188.25.156","10.188.25.157","10.188.25.158","10.188.25.159","10.188.25.15",
-  "10.188.25.160","10.188.25.164","10.188.25.165","10.188.25.166","10.188.25.167",
-  "10.188.25.168","10.188.25.169","10.188.25.170","10.188.25.171","10.188.25.173",
-  "10.188.25.174","10.188.25.175","10.188.25.176","10.188.25.190","10.188.25.191",
-  "10.188.25.192","10.188.25.194","10.188.25.195","10.188.25.196","10.188.25.197",
-  "10.188.25.20","10.188.25.21","10.188.25.230","10.188.25.232","10.188.25.234",
-  "10.188.25.31","10.188.25.32","10.188.25.33","10.188.25.34","10.188.25.41",
-  "10.188.25.42","10.188.25.43","10.188.25.44","10.188.25.45","10.188.25.55",
-  "10.188.25.56","10.188.25.57","10.188.25.58","10.188.25.59","10.188.25.63",
-  "10.188.25.64","10.188.25.65","10.188.25.66","10.188.25.67","10.188.25.68",
-  "10.188.25.69","10.188.25.70","10.188.25.71","10.188.25.73","10.188.25.74",
-  "10.188.25.75","10.188.25.80"
-];
+const GET_ALL_IPS_URL = "https://10.191.171.12:5443/EISHOME/prDrSync/getAllIps/";
+const API_URL         = "https://10.191.171.12:5443/EISHOME/prDrSync/checkSyncIPSpecific/";
 
-function getPairs() {
+// Build PR→DR pairs from fetched IPs
+// 10.188.24.x → PR,  10.177.40.x → DR
+// 10.188.25.x → PR,  10.177.41.x → DR
+function buildPairs(serverIps) {
+  const ipSet = new Set(serverIps);
   const pairs = [];
-  for (const pr of ALL_IPS.filter(ip => ip.startsWith("10.188."))) {
+  for (const pr of serverIps) {
     const parts = pr.split(".");
-    const drThird = parts[2] === "24" ? "40" : "41";
+    if (parts[1] !== "188") continue;
+    const drThird = parts[2] === "24" ? "40" : parts[2] === "25" ? "41" : null;
+    if (!drThird) continue;
     const dr = `10.177.${drThird}.${parts[3]}`;
-    if (ALL_IPS.includes(dr)) pairs.push({ pr, dr, id: `${pr}|${dr}` });
+    if (ipSet.has(dr) || true) { // include even if DR not in fetched list — API will handle errors
+      pairs.push({ pr, dr, id: `${pr}|${dr}` });
+    }
   }
   return pairs;
 }
-
-const PAIRS = getPairs();
-const API_URL = "https://10.191.171.12:5443/EISHOME/prDrSync/checkSyncIPSpecific/";
 
 const GROUPS = [
   { id: "a", label: "SUBSET A", sublabel: "10.188.24.x  /  10.177.40.x", prefix: "10.188.24." },
@@ -119,6 +52,7 @@ const css = `
   @keyframes blink   { 0%,100%{opacity:1} 50%{opacity:0.3} }
   @keyframes cardPageIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeSlideIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
   .card-page-in { animation: cardPageIn 0.2s ease forwards; }
 
@@ -311,17 +245,22 @@ const css = `
   }
   .tab-btn.on { color:${C.accent}; border-bottom-color:${C.accent}; }
   .tab-btn:hover:not(.on) { color:${C.text}; }
+
+  /* ── Boot screen ── */
+  .boot-screen {
+    position:fixed; inset:0; background:${C.bg}; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; gap:18px; z-index:500;
+    animation: fadeIn 0.3s ease;
+  }
 `;
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const oct = ip => ip.split(".")[3];
 
-// API has a typo "differnces" — handle both spellings
 function getDiff(data) {
   return data?.differnces ?? data?.differences ?? null;
 }
 
-// Parse flat string "YONO_EXP_01:4424 -> Yono_E_01 -> Service: TDSEnquiryMicroService_expDS"
 function parseEntry(str) {
   const arrowParts = str.split(" -> ");
   const first = arrowParts[0];
@@ -403,22 +342,18 @@ function ServerCard({ pair, result, onClick }) {
   );
 }
 
-// ─── Entry list (flat string arrays) ─────────────────────────────────────────
 function EntryList({ items, type, collapsed, onToggle }) {
   if (!items || items.length === 0) return null;
   const isMissDR = type === "env2";
-  const color = isMissDR ? "C_RED" : "C_AMBER";
   const colorVal = isMissDR ? C.red : C.amber;
-  const bgVal = isMissDR ? C.redBg : C.amberBg;
-  const borderVal = isMissDR ? C.redBorder : C.amberBorder;
-  const icon = isMissDR ? "⬇" : "⬆";
-  const heading = isMissDR
+  const bgVal    = isMissDR ? C.redBg : C.amberBg;
+  const icon     = isMissDR ? "⬇" : "⬆";
+  const heading  = isMissDR
     ? "Present on PR but missing on DR — DR needs to be updated"
     : "Present on DR but missing on PR — needs investigation";
 
   return (
     <div style={{ marginBottom: 20 }}>
-      {/* Section header */}
       <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, paddingBottom:8, borderBottom:`1px solid ${C.border}` }}>
         <div style={{ width:28, height:28, borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", background:bgVal, border:`1px solid ${colorVal}33`, flexShrink:0 }}>
           <span style={{ color:colorVal, fontSize:13 }}>{icon}</span>
@@ -434,49 +369,24 @@ function EntryList({ items, type, collapsed, onToggle }) {
           </div>
           <div style={{ fontSize:11, color:C.textSub, marginTop:2 }}>{heading}</div>
         </div>
-        <button
-          className="btn btn-ghost"
-          style={{ padding:"3px 10px", fontSize:11 }}
-          onClick={onToggle}
-        >
+        <button className="btn btn-ghost" style={{ padding:"3px 10px", fontSize:11 }} onClick={onToggle}>
           {collapsed ? "SHOW" : "HIDE"}
         </button>
       </div>
-
-      {/* Entry rows */}
       {!collapsed && (
         <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
           {items.map((entry, i) => {
             const { name, port, trail } = parseEntry(entry);
             return (
-              <div key={i} style={{
-                background: C.card,
-                border: `1px solid ${C.border}`,
-                borderLeft: `3px solid ${colorVal}`,
-                borderRadius: 6,
-                padding: "9px 12px",
-                display:"flex", alignItems:"flex-start", gap:12, flexWrap:"wrap"
-              }}>
-                {/* Row number */}
-                <span style={{ fontSize:10, color:C.textMuted, fontWeight:700, minWidth:22, paddingTop:1 }}>
-                  {String(i+1).padStart(2,"0")}
-                </span>
-                {/* Name chip */}
-                <span style={{
-                  fontSize:12, fontWeight:700, color:colorVal,
-                  background:`${colorVal}12`, border:`1px solid ${colorVal}28`,
-                  borderRadius:4, padding:"2px 8px", flexShrink:0
-                }}>
-                  {name}
-                </span>
-                {/* Port */}
+              <div key={i} style={{ background:C.card, border:`1px solid ${C.border}`, borderLeft:`3px solid ${colorVal}`, borderRadius:6, padding:"9px 12px", display:"flex", alignItems:"flex-start", gap:12, flexWrap:"wrap" }}>
+                <span style={{ fontSize:10, color:C.textMuted, fontWeight:700, minWidth:22, paddingTop:1 }}>{String(i+1).padStart(2,"0")}</span>
+                <span style={{ fontSize:12, fontWeight:700, color:colorVal, background:`${colorVal}12`, border:`1px solid ${colorVal}28`, borderRadius:4, padding:"2px 8px", flexShrink:0 }}>{name}</span>
                 {port && (
                   <span style={{ fontSize:11, color:C.textMuted, flexShrink:0, paddingTop:2 }}>
                     <span style={{ color:C.textMuted, marginRight:3 }}>PORT</span>
                     <span style={{ color:C.textSub, fontWeight:700 }}>{port}</span>
                   </span>
                 )}
-                {/* Breadcrumb trail */}
                 {trail.length > 0 && (
                   <span style={{ fontSize:11, color:C.textMuted, flex:1, minWidth:120, paddingTop:2, lineHeight:1.5 }}>
                     {trail.map((seg, si) => (
@@ -496,7 +406,6 @@ function EntryList({ items, type, collapsed, onToggle }) {
   );
 }
 
-// ─── Detail Modal ─────────────────────────────────────────────────────────────
 function DetailModal({ pair, result, onClose }) {
   const [collapseDR, setCollapseDR] = useState(false);
   const [collapsePR, setCollapsePR] = useState(false);
@@ -513,7 +422,6 @@ function DetailModal({ pair, result, onClose }) {
   return (
     <div className="overlay" onClick={e => e.target===e.currentTarget && onClose()}>
       <div className="modal">
-        {/* Header */}
         <div className="mh">
           <div style={{ display:"flex", alignItems:"center", gap:12 }}>
             <div style={{ width:3, height:26, borderRadius:2, background:barColor, boxShadow:`0 0 8px ${barColor}88` }} />
@@ -527,11 +435,7 @@ function DetailModal({ pair, result, onClose }) {
           </div>
           <button className="btn btn-ghost" onClick={onClose} style={{ padding:"3px 9px", fontSize:14 }}>✕</button>
         </div>
-
-        {/* Body */}
         <div className="mb">
-
-          {/* Error banner */}
           {result?.error && (
             <div style={{ background:C.amberBg, border:`1px solid ${C.amberBorder}`, borderRadius:7, padding:"12px 16px", marginBottom:16 }}>
               <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
@@ -544,8 +448,6 @@ function DetailModal({ pair, result, onClose }) {
               </div>
             </div>
           )}
-
-          {/* Server info cards */}
           <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" }}>
             <div style={{ flex:1, minWidth:140, background:C.card, border:`1px solid ${C.border}`, borderRadius:7, padding:"10px 14px" }}>
               <div style={{ fontSize:9, color:C.textMuted, fontWeight:700, letterSpacing:"0.1em", marginBottom:2 }}>PR SERVER</div>
@@ -571,8 +473,6 @@ function DetailModal({ pair, result, onClose }) {
               </div>
             )}
           </div>
-
-          {/* In-sync state */}
           {isSynced && (
             <div style={{ textAlign:"center", padding:"30px 0", background:"rgba(0,214,143,0.04)", borderRadius:10, border:`1px solid ${C.greenBorder}` }}>
               <div style={{ fontSize:32, marginBottom:8 }}>✓</div>
@@ -580,8 +480,6 @@ function DetailModal({ pair, result, onClose }) {
               <div style={{ fontSize:13, color:C.textSub }}>No configuration drift detected between PR and DR.</div>
             </div>
           )}
-
-          {/* Out of sync: entry lists */}
           {!isSynced && diff && (
             <>
               <EntryList items={missDR} type="env2" collapsed={collapseDR} onToggle={() => setCollapseDR(v => !v)} />
@@ -595,8 +493,6 @@ function DetailModal({ pair, result, onClose }) {
             </>
           )}
         </div>
-
-        {/* Footer */}
         <div className="mf">
           <button className="btn btn-ghost" onClick={onClose}>CLOSE</button>
         </div>
@@ -605,7 +501,6 @@ function DetailModal({ pair, result, onClose }) {
   );
 }
 
-// ─── Subnet Scroll Panel ──────────────────────────────────────────────────────
 function SubnetScroll({ pairs, results, onCardClick }) {
   const gs = pairs.filter(p => results[p.id]?.data?.status==="IN SYNC").length;
   const gd = pairs.filter(p => results[p.id]?.data?.status==="NOT IN SYNC").length;
@@ -627,8 +522,40 @@ function SubnetScroll({ pairs, results, onCardClick }) {
   );
 }
 
+// ─── Boot / Loading Screen ────────────────────────────────────────────────────
+function BootScreen({ status, error, onRetry }) {
+  return (
+    <div className="boot-screen">
+      <div style={{ width:3, height:40, borderRadius:2, background:`linear-gradient(180deg,${C.accent},#1a4fb5)`, marginBottom:4 }} />
+      <div style={{ fontSize:15, fontWeight:700, letterSpacing:"0.12em", color:C.text }}>EIS SYNC PORTAL</div>
+      <div style={{ fontSize:9, color:C.textMuted, letterSpacing:"0.1em", marginBottom:16 }}>PR / DR SYNCHRONIZATION MONITOR</div>
+      {error ? (
+        <div style={{ textAlign:"center", maxWidth:380 }}>
+          <div style={{ background:C.amberBg, border:`1px solid ${C.amberBorder}`, borderRadius:8, padding:"14px 20px", marginBottom:14 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:C.amber, letterSpacing:"0.07em", marginBottom:6 }}>⚠ FAILED TO LOAD SERVER LIST</div>
+            <div style={{ fontSize:12, color:C.textSub, lineHeight:1.6 }}>{error}</div>
+            <div style={{ fontSize:11, color:C.textMuted, marginTop:6 }}>
+              Endpoint: <span style={{ color:C.textSub }}>{GET_ALL_IPS_URL}</span>
+            </div>
+          </div>
+          <button className="btn btn-primary" onClick={onRetry}>RETRY</button>
+        </div>
+      ) : (
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10 }}>
+          <Spinner size={28} />
+          <div style={{ fontSize:12, color:C.textSub }}>{status}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
+  const [pairs,      setPairs]      = useState(null);   // null = not loaded yet
+  const [bootStatus, setBootStatus] = useState("Fetching server list…");
+  const [bootError,  setBootError]  = useState(null);
+
   const [results,    setResults]    = useState({});
   const [modal,      setModal]      = useState(null);
   const [filter,     setFilter]     = useState("all");
@@ -637,8 +564,32 @@ export default function App() {
   const [subnetIdx,  setSubnetIdx]  = useState(0);
   const [sliding,    setSliding]    = useState(false);
   const [slideDir,   setSlideDir]   = useState(1);
-  const abortRef   = useRef(null);
+  const abortRef = useRef(null);
 
+  // ── Fetch server list on mount (and on retry) ─────────────────────────────
+  const fetchServerList = useCallback(async () => {
+    setBootError(null);
+    setBootStatus("Fetching server list…");
+    try {
+      const res = await fetch(GET_ALL_IPS_URL, { method:"POST" });
+      if (!res.ok) throw new Error(`HTTP ${res.status} — ${res.statusText}`);
+      const json = await res.json();
+      const ips = (json.serverIps || []).map(o => o.serverIP).filter(Boolean);
+      if (ips.length === 0) throw new Error("API returned an empty server list.");
+      setBootStatus(`Building pairs from ${ips.length} servers…`);
+      const built = buildPairs(ips);
+      if (built.length === 0) throw new Error("No PR/DR pairs could be built from the returned IPs.");
+      setPairs(built);
+      // Auto-start sync checks once pairs are ready
+      runChecks(built);
+    } catch (e) {
+      setBootError(e.message);
+    }
+  }, []); // eslint-disable-line
+
+  useEffect(() => { fetchServerList(); }, [fetchServerList]);
+
+  // ── Check helpers ─────────────────────────────────────────────────────────
   const updateResult = useCallback((id, patch) => {
     setResults(prev => ({ ...prev, [id]: { ...prev[id], ...patch } }));
   }, []);
@@ -661,22 +612,26 @@ export default function App() {
     }
   }
 
-  async function runAll() {
+  async function runChecks(pairList) {
     const ctrl = new AbortController();
     abortRef.current = ctrl;
     setIsRunning(true);
     const fresh = {};
-    PAIRS.forEach(p => { fresh[p.id] = { loading:true }; });
+    pairList.forEach(p => { fresh[p.id] = { loading:true }; });
     setResults(fresh);
     let idx = 0;
     async function worker() {
-      while (idx < PAIRS.length && !ctrl.signal.aborted) {
-        const pair = PAIRS[idx++];
+      while (idx < pairList.length && !ctrl.signal.aborted) {
+        const pair = pairList[idx++];
         await checkPair(pair, ctrl.signal);
       }
     }
     await Promise.all(Array.from({ length:6 }, worker));
     setIsRunning(false);
+  }
+
+  async function runAll() {
+    if (pairs) await runChecks(pairs);
   }
 
   function stopAll() {
@@ -695,14 +650,22 @@ export default function App() {
     if (idx === subnetIdx || sliding) return;
     setSlideDir(idx > subnetIdx ? 1 : -1);
     setSliding(true);
-    setTimeout(() => {
-      setSubnetIdx(idx);
-      setSliding(false);
-    }, 320);
+    setTimeout(() => { setSubnetIdx(idx); setSliding(false); }, 320);
   }
 
+  // ── Render boot screen until pairs loaded ─────────────────────────────────
+  if (!pairs) {
+    return (
+      <>
+        <style>{css}</style>
+        <BootScreen status={bootStatus} error={bootError} onRetry={fetchServerList} />
+      </>
+    );
+  }
+
+  // ── Stats ─────────────────────────────────────────────────────────────────
   const vals       = Object.values(results);
-  const total      = PAIRS.length;
+  const total      = pairs.length;
   const checked    = vals.filter(r => r && !r.loading && (r.data||r.error)).length;
   const synced     = vals.filter(r => r?.data?.status==="IN SYNC").length;
   const notSynced  = vals.filter(r => r?.data?.status==="NOT IN SYNC").length;
@@ -710,7 +673,7 @@ export default function App() {
   const inProgress = vals.filter(r => r?.loading).length;
 
   function getFiltered(group) {
-    return PAIRS.filter(p => {
+    return pairs.filter(p => {
       if (!p.pr.startsWith(group.prefix)) return false;
       const r = results[p.id];
       if (search) {
@@ -742,7 +705,8 @@ export default function App() {
             </div>
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-            {checked>0 && <button className="btn btn-csv" onClick={() => downloadCSV(PAIRS, results)}>DOWNLOAD CSV</button>}
+            <span style={{ fontSize:10, color:C.textMuted }}>{pairs.length} pairs loaded</span>
+            {checked>0 && <button className="btn btn-csv" onClick={() => downloadCSV(pairs, results)}>DOWNLOAD CSV</button>}
             {isRunning
               ? <button className="btn btn-stop" onClick={stopAll}>STOP</button>
               : <button className="btn btn-primary" onClick={runAll}>CHECK ALL SERVERS</button>
@@ -802,7 +766,7 @@ export default function App() {
             }}>
               <span style={{ fontSize:12, fontWeight:700, color:C.accent, letterSpacing:"0.1em" }}>{activeGroup.label}</span>
               <span style={{ fontSize:11, color:C.textMuted }}>{activeGroup.sublabel}</span>
-              <span style={{ fontSize:11, color:C.textMuted }}>— {PAIRS.filter(p=>p.pr.startsWith(activeGroup.prefix)).length} pairs</span>
+              <span style={{ fontSize:11, color:C.textMuted }}>— {pairs.filter(p=>p.pr.startsWith(activeGroup.prefix)).length} pairs</span>
             </div>
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:6, marginRight:14 }}>
