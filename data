@@ -1,73 +1,728 @@
-{status: "NOT IN SYNC", ip1: "10.188.25.63", ip2: "10.177.41.63", differnces: {missing_in_env1: [],…}}
-differnces
-: 
-{missing_in_env1: [],…}
-missing_in_env1
-: 
-[]
-missing_in_env2
-: 
-["GCC_EXP:4418", "NON_CBS_ACCOUNT_EXP:4426", "NP_EXP:4420", "MISC_1208_EXP:4415",…]
-0
-: 
-"GCC_EXP:4418"
-1
-: 
-"NON_CBS_ACCOUNT_EXP:4426"
-2
-: 
-"NP_EXP:4420"
-3
-: 
-"MISC_1208_EXP:4415"
-4
-: 
-"JANSURAKSHA_EXP:4416"
-5
-: 
-"WEB_APP_EKYC_EXP:4429"
-6
-: 
-"MISC_EXP_UPI:4422"
-7
-: 
-"WEB_APP_BROKER_EXP:4423"
-8
-: 
-"MISC_EXP_02:4417"
-9
-: 
-"MISC_EXP:4419"
-10
-: 
-"NP_SPL:4421"
-11
-: 
-"YONO_EXP_02:4428"
-12
-: 
-"CUST_NCBS_EXP:4425"
-13
-: 
-"YONO_EXP_01:4424 -> Yono_E_01 -> Service: TDSEnquiryMicroService_expDS"
-14
-: 
-"YONO_EXP_01:4424 -> Yono_E_01 -> Service: microserviceCIFEnquiry_expDS"
-15
-: 
-"YONO_EXP_01:4424 -> Yono_E_01 -> Service: custEnquiryMicro_expDS"
-16
-: 
-"YONO_EXP_01:4424 -> Yono_E_01 -> Service: microserviceDedupe_expDS"
-property_mismatches
-: 
-[]
-ip1
-: 
-"10.188.25.63"
-ip2
-: 
-"10.177.41.63"
-status
-: 
-"NOT IN SYNC"
+{
+  "timestamp": "2026-03-12T16:02:54.015747",
+  "system": {
+    "hostname": "eispraccexp-01",
+    "ip": "10.188.25.10",
+    "os": "Linux-5.14.0-611.30.1.el9_7.x86_64-x86_64-with-glibc2.34",
+    "uptime": "16:02:54 up 20 days, 12:18,  7 users,  load average: 4.27, 2.98, 2.39"
+  },
+  "etc_hosts": [
+    "127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4",
+    "10.188.25.10  eispraccexp-01",
+    "10.191.171.92    system.api",
+    "10.191.171.92    ihl.lb",
+    "10.191.171.92    eispri.sbi.co.in",
+    "10.188.10.82 eisprbkp01",
+    "10.188.10.84 eisprbkp02",
+    "192.168.43.219 eisprbkp01",
+    "192.168.43.220 eisprbkp02",
+    "10.191.170.113  eissipr-scan1.sbi.co.in",
+    "10.191.170.114  eissipr-scan1.sbi.co.in",
+    "10.191.170.115  eissipr-scan1.sbi.co.in",
+    "10.191.171.93   cbssi1.sbi.co.in",
+    "10.176.53.145 CORP.AD.SBI############################LDAP###########################",
+    "10.176.53.145 CORP.AD.SBI"
+  ],
+  "certificates": {
+    "Truststore": {
+      "Truststore": {
+        "bank_sbi": {
+          "alias": "bank_sbi",
+          "owner": "CN=*.bank.sbi, O=STATE BANK OF INDIA, L=Mumbai, ST=Maharashtra, C=IN",
+          "valid_from": "5/6/25 5:30 AM",
+          "valid_to": "6/7/26 5:29 AM",
+          "sha1": "42:A0:9D:F5:AC:4B:06:44:62:2A:74:A3:E8:B1:29:F9:34:73:1F:BC"
+        },
+        "selfsignedcertificate": {
+          "alias": "selfsignedcertificate",
+          "owner": "CN=GJLOTUS01D231.CORP.AD.SBI, OU=EIS, O=SBI, L=NAVI MUMBAI, ST=MAHARASHTRA, POSTALCODE=400614, C=IN",
+          "valid_from": "10/8/18 7:32 PM",
+          "valid_to": "10/7/23 7:32 PM",
+          "sha1": "E3:D9:34:FC:E6:C6:72:E9:E2:F0:8A:76:46:0B:3D:2C:C0:E7:4E:20"
+        },
+        "siservices_16072025": {
+          "alias": "siservices_16072025",
+          "owner": "CN=siservices.sbi.co.in",
+          "valid_from": "6/26/25 4:22 PM",
+          "valid_to": "6/26/27 4:22 PM",
+          "sha1": "D2:49:20:25:27:8D:47:27:67:C9:95:D7:66:F1:E3:69:4C:1A:AA:BB"
+        },
+        "los": {
+          "alias": "los",
+          "owner": "CN=SBI-PROD-RCA, DC=AD, DC=SBI",
+          "valid_from": "2/8/17 12:25 PM",
+          "valid_to": "2/8/57 12:35 PM",
+          "sha1": "00:35:2F:F3:0F:A5:A3:06:66:5A:07:62:26:C2:DF:8A:D3:3A:5B:99"
+        },
+        "cov": {
+          "alias": "cov",
+          "owner": "CN=*.statebanktimes.in, OU=DWH, O=SBI, L=Mumbai, ST=MH, C=IN",
+          "valid_from": "3/20/20 7:15 PM",
+          "valid_to": "3/20/22 7:25 PM",
+          "sha1": "AD:5F:3C:5D:E3:5C:1A:D4:DA:13:88:CC:37:E8:69:B6:7D:E1:CD:59"
+        },
+        "cppc2": {
+          "alias": "cppc2",
+          "owner": "CN=penapp2.pension.sbi, OU=Belapur, O=SBI, L=Navi Mumbai, ST=MH, C=IN",
+          "valid_from": "4/15/17 5:01 PM",
+          "valid_to": "4/15/19 5:11 PM",
+          "sha1": "59:63:12:CD:0C:9A:5C:8A:75:E0:C3:08:17:DD:FA:B9:F3:73:EB:51"
+        },
+        "cppc1": {
+          "alias": "cppc1",
+          "owner": "CN=penapp1.pension.sbi, OU=Belapur, O=SBI, L=Navi Mumbai, ST=MH, C=IN",
+          "valid_from": "4/19/17 2:59 PM",
+          "valid_to": "4/19/19 3:09 PM",
+          "sha1": "0E:E7:D1:1B:1A:33:1D:3A:3D:40:30:92:83:48:8C:52:C6:C2:61:9C"
+        },
+        "trs": {
+          "alias": "trs",
+          "owner": "CN=*.statebanktimes.in, OU=SP4, O=SBI, L=MUMBAI, ST=MAHARASHTRA, C=IN",
+          "valid_from": "3/25/19 3:30 PM",
+          "valid_to": "3/25/21 3:40 PM",
+          "sha1": "36:F7:CB:DA:39:71:3C:81:EF:4F:CE:4B:5F:27:5E:01:D5:96:66:96"
+        },
+        "amlock_new": {
+          "alias": "amlock_new",
+          "owner": "CN=*.statebanktimes.in, OU=IT SP II, O=State Bank Of India, L=Mumbai, ST=Maharastra, C=IN",
+          "valid_from": "5/12/20 3:33 PM",
+          "valid_to": "5/12/22 3:43 PM",
+          "sha1": "39:C5:F8:1E:BB:B3:E1:1F:30:D4:15:A1:7F:85:80:94:DA:5C:78:D1"
+        },
+        "inb_ssl": {
+          "alias": "inb_ssl",
+          "owner": "CN=inbintranet.onlinesbi.com, OU=INTERNET BANKING DEPARTMENT, O=STATE BANK OF INDIA, L=Mumbai, ST=Maharashtra, C=IN, SERIALNUMBER=Government Entity, OID.1.3.6.1.4.1.311.60.2.1.3=IN, OID.2.5.4.15=Government Entity",
+          "valid_from": "7/13/20 5:30 AM",
+          "valid_to": "7/30/22 5:30 PM",
+          "sha1": "15:EC:AE:60:5F:BA:5A:77:62:81:8D:6E:09:18:7A:30:E4:55:F2:99"
+        },
+        "mykey": {
+          "alias": "mykey",
+          "owner": "CN=*.ONLINESBI.COM, OU=ATM, O=SBI, L=BELAPUR, ST=MH, C=IN",
+          "valid_from": "4/2/21 7:29 AM",
+          "valid_to": "4/2/23 7:29 AM",
+          "sha1": "C8:2F:99:FD:51:D0:84:67:20:37:1B:EB:48:5E:A5:A8:75:60:12:10"
+        },
+        "itchallan": {
+          "alias": "itchallan",
+          "owner": "CN=gbss.statebanktimes.in, OU=IT Special Projects - I (GBSS Phase2), O=State Bank of India, L=Navi Mumbai, ST=Maharashtra, C=IN",
+          "valid_from": "2/6/20 4:31 PM",
+          "valid_to": "2/6/22 4:41 PM",
+          "sha1": "B0:C2:DE:5D:59:1C:BE:BD:74:64:1D:CB:B1:62:78:22:E4:DA:DA:86"
+        },
+        "digicert global root ca g2": {
+          "alias": "digicert global root ca g2",
+          "owner": "CN=DigiCert Global Root G2, OU=www.digicert.com, O=DigiCert Inc, C=US",
+          "valid_from": "8/1/13 5:30 PM",
+          "valid_to": "1/15/38 5:30 PM",
+          "sha1": "DF:3C:24:F9:BF:D6:66:76:1B:26:80:73:FE:06:D1:CC:8D:4F:82:A4"
+        },
+        "hrms_new": {
+          "alias": "hrms_new",
+          "owner": "CN=erpprod.hrms.com, OU=HRMS, O=SBI, L=Belapur, C=IN",
+          "valid_from": "10/31/20 4:10 PM",
+          "valid_to": "10/31/22 4:20 PM",
+          "sha1": "C4:6D:F4:97:42:DF:5F:D9:EA:8F:AC:AC:37:90:5C:7F:FD:06:67:0D"
+        },
+        "amlock": {
+          "alias": "amlock",
+          "owner": "CN=*.statebanktimes.in, OU=SPII, O=SBI, L=NERUL, ST=MH, C=IN",
+          "valid_from": "5/24/18 11:32 AM",
+          "valid_to": "5/23/20 11:32 AM",
+          "sha1": "A0:F0:95:B4:5B:A6:AC:93:A4:C7:37:78:48:22:9D:8C:27:F5:68:D6"
+        },
+        "icollect": {
+          "alias": "icollect",
+          "owner": "CN=www.onlinesbi.com, O=STATE BANK OF INDIA, L=Navi Mumbai, ST=Maharashtra, C=IN, SERIALNUMBER=Government Entity, OID.1.3.6.1.4.1.311.60.2.1.3=IN, OID.2.5.4.15=Government Entity",
+          "valid_from": "1/20/20 5:30 AM",
+          "valid_to": "1/24/22 5:30 PM",
+          "sha1": "91:DB:96:AF:B5:B7:EF:A9:F7:5A:1C:C9:7D:12:64:45:76:1E:25:BD"
+        },
+        "atmk_fss": {
+          "alias": "atmk_fss",
+          "owner": "CN=*.statebanktimes.in, C=IN",
+          "valid_from": "3/20/18 1:19 PM",
+          "valid_to": "3/20/20 1:29 PM",
+          "sha1": "49:E2:21:27:46:DB:52:9E:05:9D:D4:E2:97:ED:28:95:7A:1F:B8:CA"
+        },
+        "gst_prod1": {
+          "alias": "gst_prod1",
+          "owner": "EMAILADDRESS=gstengine.support@sbi.co.in, CN=deweb.sbi.co.in, OU=SP1, O=SBI, L=MUM, ST=MH, C=IN",
+          "valid_from": "6/12/18 5:38 PM",
+          "valid_to": "6/12/20 5:48 PM",
+          "sha1": "6F:FD:0B:EA:5A:5C:DF:46:29:2C:24:BA:DE:37:08:81:2C:60:A4:3E"
+        },
+        "digicert global ca g2": {
+          "alias": "digicert global ca g2",
+          "owner": "CN=DigiCert Global CA G2, O=DigiCert Inc, C=US",
+          "valid_from": "8/1/13 5:30 PM",
+          "valid_to": "8/1/28 5:30 PM",
+          "sha1": "D6:AE:E3:16:31:F7:AB:C5:6B:9D:E8:AB:EC:CC:41:08:A6:26:B1:04"
+        },
+        "ppi": {
+          "alias": "ppi",
+          "owner": "CN=ppicdb.sbi.co.in, OU=STATE BANK OF INDIA, O=STATE BANK OF INDIA, L=MUMBAI, ST=MAHARASHTRA, C=IN",
+          "valid_from": "10/11/18 7:14 AM",
+          "valid_to": "10/10/20 7:14 AM",
+          "sha1": "E8:55:D2:CD:64:93:6F:30:33:5C:07:48:4C:9C:CA:8D:30:2E:95:A2"
+        },
+        "yono_ssl_15_06_2023": {
+          "alias": "yono_ssl_15_06_2023",
+          "owner": "CN=ib.sbiintouch.in, OU=IT-PROJECT LOTUS, O=STATE BANK OF INDIA, L=NAVI MUMBAI, ST=MAHARASHTRA, C=IN",
+          "valid_from": "5/15/25 8:03 PM",
+          "valid_to": "5/15/27 8:03 PM",
+          "sha1": "DF:6D:7A:87:6E:2F:5D:DA:BE:76:92:87:9D:F9:AF:71:FD:3B:48:88"
+        },
+        "otp_sms": {
+          "alias": "otp_sms",
+          "owner": "EMAILADDRESS=dgm.pe2@sbi.co.in, CN=sms.sbi.co.in, OU=PE-II, O=STATE BANK OF INDIA, L=NAVI MUMBAI, ST=MAHARASTRA, C=IN",
+          "valid_from": "5/21/19 4:28 PM",
+          "valid_to": "5/21/21 4:38 PM",
+          "sha1": "83:CC:5B:BE:9B:F7:6C:BD:FD:11:C1:1A:39:3A:E0:75:3D:18:C4:D1"
+        },
+        "ckyc_new": {
+          "alias": "ckyc_new",
+          "owner": "CN=sbickyc.sbi, OU=GITC, O=SBI, L=BELAPUR, ST=MAHARASHTRA, C=IN",
+          "valid_from": "11/29/19 7:30 PM",
+          "valid_to": "11/28/21 7:30 PM",
+          "sha1": "47:E2:3B:81:05:F0:C7:6C:64:D8:CF:CA:CD:02:EC:10:1B:D3:AD:CD"
+        },
+        "siron_modac2": {
+          "alias": "siron_modac2",
+          "owner": "CN=SBI-PROD-RCA, DC=AD, DC=SBI",
+          "valid_from": "2/8/17 12:25 PM",
+          "valid_to": "2/8/57 12:35 PM",
+          "sha1": "00:35:2F:F3:0F:A5:A3:06:66:5A:07:62:26:C2:DF:8A:D3:3A:5B:99"
+        },
+        "dcms_cardenq": {
+          "alias": "dcms_cardenq",
+          "owner": "EMAILADDRESS=dcmsteam@sbi.co.in, CN=SBI, OU=DCMS, O=SBI, L=MUMBAI, ST=MUMBAI, C=IN",
+          "valid_from": "9/8/20 10:22 AM",
+          "valid_to": "9/3/40 10:22 AM",
+          "sha1": "F5:86:67:21:A6:03:C2:6D:A7:EF:0B:C3:C8:2F:70:D0:13:99:0C:63"
+        },
+        "icollect1": {
+          "alias": "icollect1",
+          "owner": "CN=www.onlinesbi.com, O=STATE BANK OF INDIA, L=Mumbai, ST=Maharashtra, C=IN, SERIALNUMBER=Government Entity, OID.1.3.6.1.4.1.311.60.2.1.3=IN, OID.2.5.4.15=Government Entity",
+          "valid_from": "7/8/20 5:30 AM",
+          "valid_to": "1/24/22 5:30 PM",
+          "sha1": "D9:F1:23:FA:56:CE:81:4C:03:80:A2:74:BB:F1:C3:78:58:79:78:C4"
+        },
+        "adv_ssl": {
+          "alias": "adv_ssl",
+          "owner": "CN=cbs.aadharvault.web.sbi.co.in, OU=CBS, O=STATE BANK OF INDIA, L=NAVI MUMBAI, ST=MAHARASHTRA, C=IN",
+          "valid_from": "5/23/19 3:46 PM",
+          "valid_to": "5/23/21 3:56 PM",
+          "sha1": "66:0A:77:BD:C7:96:79:4B:85:51:66:32:6E:3D:18:69:15:44:DF:24"
+        },
+        "gst2": {
+          "alias": "gst2",
+          "owner": "EMAILADDRESS=gstengine.support@sbi.co.in, CN=deweb.sbi.co.in, OU=SP1, O=SBI, L=MUM, ST=MH, C=IN",
+          "valid_from": "6/15/20 2:54 PM",
+          "valid_to": "6/15/22 3:04 PM",
+          "sha1": "3A:CB:44:1F:2A:FD:79:B0:1A:82:32:71:C7:BF:1A:89:DF:EE:C3:A3"
+        },
+        "gst1": {
+          "alias": "gst1",
+          "owner": "EMAILADDRESS=gstengine.support@sbi.co.in, CN=ceweb.sbi.co.in, OU=SP1, O=SBI, L=MUM, ST=MH, C=IN",
+          "valid_from": "6/15/20 2:54 PM",
+          "valid_to": "6/15/22 3:04 PM",
+          "sha1": "C8:11:B6:2D:1C:1E:D5:BD:C5:C9:D6:41:32:E8:69:58:31:B8:54:51"
+        },
+        "adhar": {
+          "alias": "adhar",
+          "owner": "CN=cbs.aadharvault.web.sbi.co.in, OU=CBS, O=STATE BANK OF INDIA, L=NAVI MUMBAI, ST=MAHARASHTRA, C=IN",
+          "valid_from": "10/1/22 1:47 PM",
+          "valid_to": "9/30/24 1:47 PM",
+          "sha1": "31:A7:79:20:4F:5D:13:74:41:B2:20:90:7C:90:4C:DB:BF:62:62:84"
+        },
+        "sslrlms": {
+          "alias": "sslrlms",
+          "owner": "CN=rlms.sbi, O=State Bank of India, L=Navi Mumbai, ST=Maharashtra, C=IN",
+          "valid_from": "2/12/20 5:28 PM",
+          "valid_to": "2/11/22 5:28 PM",
+          "sha1": "09:34:FA:15:F1:E5:56:2E:6B:D8:17:DE:48:AB:C4:B9:AD:C3:E8:5B"
+        },
+        "cc": {
+          "alias": "cc",
+          "owner": "CN=SBI CONTACTCENTRE, OU=CRM, O=STATE BANK OF INDIA, L=NAVI MUMBAI, ST=MAHARASHTRA, C=IN",
+          "valid_from": "6/28/19 7:55 PM",
+          "valid_to": "6/28/21 8:05 PM",
+          "sha1": "09:DD:AE:CC:D1:1C:FD:8E:04:E9:48:EC:67:4C:00:E0:74:6D:68:83"
+        },
+        "emudra_sbi_co_in": {
+          "alias": "emudra_sbi_co_in",
+          "owner": "CN=emudra.sbi.co.in, O=STATE BANK OF INDIA, L=Navi Mumbai, ST=Maharashtra, C=IN, SERIALNUMBER=Government Entity, OID.1.3.6.1.4.1.311.60.2.1.3=IN, OID.2.5.4.15=Government Entity",
+          "valid_from": "8/1/19 5:30 AM",
+          "valid_to": "8/3/21 5:30 PM",
+          "sha1": "F0:A5:29:63:6F:9C:88:54:EC:C6:41:59:ED:50:C5:2B:B1:E3:B6:48"
+        },
+        "crmssl": {
+          "alias": "crmssl",
+          "owner": "CN=CRM ESB PRD, OU=CRM, O=STATE BANK OF INDIA, L=MUMBAI, ST=MH, C=IN",
+          "valid_from": "7/23/19 3:13 PM",
+          "valid_to": "7/22/21 3:13 PM",
+          "sha1": "44:5B:17:20:9B:D5:06:9A:FF:2B:4D:6A:04:41:E4:0E:B7:0D:96:63"
+        },
+        "trs_new": {
+          "alias": "trs_new",
+          "owner": "EMAILADDRESS=trs@.sbi.co.in, CN=TRS-WEB, OU=SP4, O=SBI, L=MUMBAI, ST=MAHARASHTRA, C=IN",
+          "valid_from": "1/28/19 10:36 AM",
+          "valid_to": "1/28/21 10:46 AM",
+          "sha1": "EA:CC:7E:52:5C:1E:AD:37:5C:AB:A4:0B:8C:6C:F0:A6:2F:8A:F1:7F"
+        },
+        "gst_prod": {
+          "alias": "gst_prod",
+          "owner": "EMAILADDRESS=gstengine.support@sbi.co.in, CN=deweb.sbi.co.in, OU=SP1, O=SBI, L=MUM, ST=MH, C=IN",
+          "valid_from": "6/12/18 5:38 PM",
+          "valid_to": "6/12/20 5:48 PM",
+          "sha1": "6F:FD:0B:EA:5A:5C:DF:46:29:2C:24:BA:DE:37:08:81:2C:60:A4:3E"
+        },
+        "ncmc_pcms": {
+          "alias": "ncmc_pcms",
+          "owner": "CN=prepaid.onlinesbi.com, OU=OPERATION PAYMENTS SYSTEM, O=STATE BANK OF INDIA, L=Navi Mumbai, ST=Maharashtra, C=IN, SERIALNUMBER=Government entity, OID.1.3.6.1.4.1.311.60.2.1.1=Mumbai, OID.1.3.6.1.4.1.311.60.2.1.2=Mumbai, OID.1.3.6.1.4.1.311.60.2.1.3=IN, OID.2.5.4.15=Government Entity",
+          "valid_from": "4/12/18 5:30 AM",
+          "valid_to": "4/12/20 5:30 PM",
+          "sha1": "75:A8:45:5B:B0:A1:4D:EB:F2:77:12:4B:D4:7E:AA:2D:E1:7A:56:4D"
+        },
+        "yono": {
+          "alias": "yono",
+          "owner": "EMAILADDRESS=onoronhaibm@sbi.co.in, CN=ib.sbiintouch.in, OU=LOTUS, O=SBI BANKT \b\b LTD., L=NAVI MUMBAI, ST=MAHARASHTRA, C=IN",
+          "valid_from": "6/23/17 5:43 PM",
+          "valid_to": "6/23/19 5:43 PM",
+          "sha1": "3C:51:DE:62:B4:87:3A:34:4C:92:15:17:DF:F8:E0:CC:EF:35:B9:47"
+        },
+        "atm_emionpos": {
+          "alias": "atm_emionpos",
+          "owner": "CN=atmsms.onlinesbi.com, C=IN",
+          "valid_from": "7/7/18 6:44 PM",
+          "valid_to": "7/7/20 6:54 PM",
+          "sha1": "6A:2A:20:A7:6F:6D:BE:E9:DB:B6:72:3A:43:EE:28:77:87:7B:EF:91"
+        },
+        "trs_form16": {
+          "alias": "trs_form16",
+          "owner": "CN=10.191.147.81, OU=sbi, O=fgs, L=mumbai, ST=maharashtra, C=in",
+          "valid_from": "1/1/20 6:05 PM",
+          "valid_to": "1/1/22 6:15 PM",
+          "sha1": "39:76:1E:83:47:3A:75:1D:1F:0B:E1:60:46:F5:F9:63:76:41:85:8E"
+        },
+        "ev": {
+          "alias": "ev",
+          "owner": "CN=DS INCOME TAX DEPARTMENT 1, SERIALNUMBER=0bdf7f622c763ad864d6cda9df6325fe38cb348d7d42e238230b4ac3d913957f, OID.2.5.4.51=\"E-2, ARA CENTRE, GROUND FLOOR, JHANDEWALAN,\", STREET=CENTRAL DELHI, ST=DELHI, POSTALCODE=110055, OU=DIRECTORATE OF INCOME TAX SYSTEMS, O=INCOME TAX DEPARTMENT, C=IN",
+          "valid_from": "2/24/21 10:11 PM",
+          "valid_to": "2/24/23 10:11 PM",
+          "sha1": "76:5C:75:55:EF:FE:25:1D:C4:15:20:32:CD:B6:95:BE:B5:C9:A9:D7"
+        },
+        "dcms": {
+          "alias": "dcms",
+          "owner": "CN=*.statebanktimes.in, OU=SBI, O=SBi, L=NAVI MUMBAI, ST=MH, C=IN",
+          "valid_from": "3/12/20 12:04 PM",
+          "valid_to": "3/12/22 12:14 PM",
+          "sha1": "19:8F:CC:C5:3F:59:EE:0A:E2:56:6C:21:1D:71:11:C0:2D:6A:1F:31"
+        },
+        "grc": {
+          "alias": "grc",
+          "owner": "EMAILADDRESS=grc.helpdesk@sbi.co.in, CN=sbigrc.com, OU=SP2, O=SBI, L=Nerul, ST=Maharashtra, C=IN",
+          "valid_from": "4/29/20 9:07 AM",
+          "valid_to": "4/29/22 9:17 AM",
+          "sha1": "CE:63:1C:DD:6C:D1:41:0B:83:48:8B:62:5C:FC:8B:CC:D8:D8:FD:24"
+        },
+        "ckyc_modac2": {
+          "alias": "ckyc_modac2",
+          "owner": "CN=sbickyc.sbi, OU=CKYC-SP3, O=State Bank Of India, L=\"GITC ,Nerul\", ST=Maharashtra, C=IN",
+          "valid_from": "12/5/17 6:15 PM",
+          "valid_to": "12/5/19 6:15 PM",
+          "sha1": "52:C3:B4:C6:BB:55:76:7C:04:4F:E5:2E:45:31:CE:33:22:2B:D3:B5"
+        },
+        "ckyc_modac1": {
+          "alias": "ckyc_modac1",
+          "owner": "CN=sbickyc.sbi, OU=CKYC-SP3, O=State Bank Of India, L=\"GITC ,Nerul\", ST=Maharashtra, C=IN",
+          "valid_from": "12/5/17 6:15 PM",
+          "valid_to": "12/5/19 6:15 PM",
+          "sha1": "52:C3:B4:C6:BB:55:76:7C:04:4F:E5:2E:45:31:CE:33:22:2B:D3:B5"
+        },
+        "siservices": {
+          "alias": "siservices",
+          "owner": "CN=Entrust Root Certification Authority - G2, OU=\"(c) 2009 Entrust, Inc. - for authorized use only\", OU=See www.entrust.net/legal-terms, O=\"Entrust, Inc.\", C=US",
+          "valid_from": "7/7/09 10:55 PM",
+          "valid_to": "12/7/30 11:25 PM",
+          "sha1": "8C:F4:27:FD:79:0C:3A:D1:66:06:8D:E8:1E:57:EF:BB:93:22:72:D4"
+        },
+        "dcms_new": {
+          "alias": "dcms_new",
+          "owner": "CN=DCMS, OU=IT-ATM, O=SBI, L=MUMBAI, ST=MH, C=IN",
+          "valid_from": "4/18/20 12:04 PM",
+          "valid_to": "4/18/22 12:14 PM",
+          "sha1": "43:9A:BC:49:44:A8:70:E6:B1:7D:EE:D7:97:09:03:BD:6E:F0:3A:74"
+        },
+        "dcms_ssl_cert": {
+          "alias": "dcms_ssl_cert",
+          "owner": "CN=DCMS, OU=IT-ATM, O=SBI, L=MUMBAI, ST=MH, C=IN",
+          "valid_from": "4/18/20 12:04 PM",
+          "valid_to": "4/18/22 12:14 PM",
+          "sha1": "43:9A:BC:49:44:A8:70:E6:B1:7D:EE:D7:97:09:03:BD:6E:F0:3A:74"
+        },
+        "apy": {
+          "alias": "apy",
+          "owner": "CN=APY-CEN-MWARE, OU=APY, O=SBI, L=MUMBAI, ST=MAHARASHTRA, C=IN",
+          "valid_from": "6/3/20 2:33 PM",
+          "valid_to": "6/3/22 2:43 PM",
+          "sha1": "C4:1F:6E:12:B9:EB:82:26:58:06:CD:20:B2:28:2A:95:64:2F:30:AE"
+        },
+        "emionposatmssl_new": {
+          "alias": "emionposatmssl_new",
+          "owner": "CN=atmsms.onlinesbi.com, OU=IT-ATM, O=SBI, L=NM, ST=MH, C=IN",
+          "valid_from": "4/30/21 2:42 PM",
+          "valid_to": "4/30/23 2:42 PM",
+          "sha1": "25:23:7F:83:AD:26:8C:3D:C8:8D:40:5B:E3:FA:77:9E:C1:8D:AF:49"
+        },
+        "icollect_new": {
+          "alias": "icollect_new",
+          "owner": "CN=www.onlinesbi.sbi, O=STATE BANK OF INDIA, L=Mumbai, ST=Maharashtra, C=IN, SERIALNUMBER=Government Entity, OID.1.3.6.1.4.1.311.60.2.1.3=IN, OID.2.5.4.15=Government Entity",
+          "valid_from": "7/8/20 5:30 AM",
+          "valid_to": "6/15/22 5:30 PM",
+          "sha1": "1E:BB:DB:24:56:30:92:15:24:32:F0:24:9F:4D:13:EF:12:F5:7A:87"
+        }
+      }
+    },
+    "Keystore": {
+      "Keystore": {
+        "bank_sbi": {
+          "alias": "bank_sbi",
+          "owner": "CN=*.bank.sbi, O=STATE BANK OF INDIA, L=Mumbai, ST=Maharashtra, C=IN",
+          "valid_from": "5/6/25 5:30 AM",
+          "valid_to": "6/7/26 5:29 AM",
+          "sha1": "42:A0:9D:F5:AC:4B:06:44:62:2A:74:A3:E8:B1:29:F9:34:73:1F:BC"
+        },
+        "digicert global root ca g2": {
+          "alias": "digicert global root ca g2",
+          "owner": "CN=DigiCert Global Root G2, OU=www.digicert.com, O=DigiCert Inc, C=US",
+          "valid_from": "8/1/13 5:30 PM",
+          "valid_to": "1/15/38 5:30 PM",
+          "sha1": "DF:3C:24:F9:BF:D6:66:76:1B:26:80:73:FE:06:D1:CC:8D:4F:82:A4"
+        },
+        "emi_pos_new": {
+          "alias": "emi_pos_new",
+          "owner": "CN=atmsms.onlinesbi.com, OU=GITC, O=SBI, L=Navi Mumbai, ST=MH, C=IN",
+          "valid_from": "5/4/19 2:56 PM",
+          "valid_to": "5/4/21 3:06 PM",
+          "sha1": "FA:BB:A1:F7:D6:63:13:EA:11:E8:A8:E7:C5:FE:F1:C9:B6:3F:22:B4"
+        },
+        "hrms_new": {
+          "alias": "hrms_new",
+          "owner": "CN=erpprod.hrms.com, OU=HRMS, O=SBI, L=Belapur, C=IN",
+          "valid_from": "10/31/20 4:10 PM",
+          "valid_to": "10/31/22 4:20 PM",
+          "sha1": "C4:6D:F4:97:42:DF:5F:D9:EA:8F:AC:AC:37:90:5C:7F:FD:06:67:0D"
+        },
+        "siservices_16072025": {
+          "alias": "siservices_16072025",
+          "owner": "CN=siservices.sbi.co.in",
+          "valid_from": "6/26/25 4:22 PM",
+          "valid_to": "6/26/27 4:22 PM",
+          "sha1": "D2:49:20:25:27:8D:47:27:67:C9:95:D7:66:F1:E3:69:4C:1A:AA:BB"
+        },
+        "hrms": {
+          "alias": "hrms",
+          "owner": "CN=erpprod.hrms.com, OU=HRMS, O=SBI, L=Belapur, C=IN",
+          "valid_from": "10/31/20 4:10 PM",
+          "valid_to": "10/31/22 4:20 PM",
+          "sha1": "C4:6D:F4:97:42:DF:5F:D9:EA:8F:AC:AC:37:90:5C:7F:FD:06:67:0D"
+        },
+        "mykey": {
+          "alias": "mykey",
+          "owner": "CN=*.ONLINESBI.COM, OU=ATM, O=SBI, L=BELAPUR, ST=MH, C=IN",
+          "valid_from": "4/2/21 7:29 AM",
+          "valid_to": "4/2/23 7:29 AM",
+          "sha1": "C8:2F:99:FD:51:D0:84:67:20:37:1B:EB:48:5E:A5:A8:75:60:12:10"
+        },
+        "digicert global ca g2": {
+          "alias": "digicert global ca g2",
+          "owner": "CN=DigiCert Global CA G2, O=DigiCert Inc, C=US",
+          "valid_from": "8/1/13 5:30 PM",
+          "valid_to": "8/1/28 5:30 PM",
+          "sha1": "D6:AE:E3:16:31:F7:AB:C5:6B:9D:E8:AB:EC:CC:41:08:A6:26:B1:04"
+        },
+        "emudra_sbi_co_in": {
+          "alias": "emudra_sbi_co_in",
+          "owner": "CN=emudra.sbi.co.in, O=STATE BANK OF INDIA, L=Navi Mumbai, ST=Maharashtra, C=IN, SERIALNUMBER=Government Entity, OID.1.3.6.1.4.1.311.60.2.1.3=IN, OID.2.5.4.15=Government Entity",
+          "valid_from": "8/1/19 5:30 AM",
+          "valid_to": "8/3/21 5:30 PM",
+          "sha1": "F0:A5:29:63:6F:9C:88:54:EC:C6:41:59:ED:50:C5:2B:B1:E3:B6:48"
+        },
+        "selfsignedcertificate": {
+          "alias": "selfsignedcertificate",
+          "owner": "CN=GJLOTUS01D231.CORP.AD.SBI, OU=EIS, O=SBI, L=NAVI MUMBAI, ST=MAHARASHTRA, POSTALCODE=400614, C=IN",
+          "valid_from": "10/8/18 7:32 PM",
+          "valid_to": "10/7/23 7:32 PM",
+          "sha1": "E3:D9:34:FC:E6:C6:72:E9:E2:F0:8A:76:46:0B:3D:2C:C0:E7:4E:20"
+        },
+        "hrmsauth": {
+          "alias": "hrmsauth",
+          "owner": "CN=fioriprd.hrms.com, OU=HRMS, O=State Bank of India, L=Mumbai, C=IN",
+          "valid_from": "1/31/20 5:27 PM",
+          "valid_to": "1/31/22 5:37 PM",
+          "sha1": "B0:64:A7:AF:2B:FA:D7:51:20:41:49:A0:06:FE:12:2D:80:2E:66:FC"
+        },
+        "eispri": {
+          "alias": "eispri",
+          "owner": "CN=ENC_EIS, OU=EIS, O=SBI, L=Mumbai, ST=Maharashtra, C=IN",
+          "valid_from": "12/3/24 1:01 PM",
+          "valid_to": "12/3/26 1:01 PM",
+          "sha1": "26:A0:6F:99:E2:F1:F3:7C:17:77:20:B4:D1:E9:7C:A3:D3:55:BB:3F"
+        }
+      }
+    },
+    "EndPoint_Public": {
+      "otpinb-old.cer": {
+        "valid_from": "Aug  1 12:00:00 2013 GMT",
+        "valid_to": "Jan 15 12:00:00 2038 GMT",
+        "sha1": "DF:3C:24:F9:BF:D6:66:76:1B:26:80:73:FE:06:D1:CC:8D:4F:82:A4",
+        "subject": "C=US, O=DigiCert Inc, OU=www.digicert.com, CN=DigiCert Global Root G2"
+      },
+      "otpinb.cer": {
+        "valid_from": "Jul 13 00:00:00 2020 GMT",
+        "valid_to": "Jul 30 12:00:00 2022 GMT",
+        "sha1": "15:EC:AE:60:5F:BA:5A:77:62:81:8D:6E:09:18:7A:30:E4:55:F2:99",
+        "subject": "businessCategory=Government Entity, jurisdictionC=IN, serialNumber=Government Entity, C=IN, ST=Maharashtra, L=Mumbai, O=STATE BANK OF INDIA, OU=INTERNET BANKING DEPARTMENT, CN=inbintranet.onlinesbi.com"
+      },
+      "DCMS_RSA_PUBLIC.cer": {
+        "valid_from": "Sep  8 04:52:33 2020 GMT",
+        "valid_to": "Sep  3 04:52:33 2040 GMT",
+        "sha1": "F5:86:67:21:A6:03:C2:6D:A7:EF:0B:C3:C8:2F:70:D0:13:99:0C:63",
+        "subject": "C=IN, ST=MUMBAI, L=MUMBAI, O=SBI, OU=DCMS, CN=SBI, emailAddress=dcmsteam@sbi.co.in"
+      },
+      "rlms_public_key.cer": {
+        "valid_from": "Mar 20 07:44:21 2020 GMT",
+        "valid_to": "Feb 25 07:44:21 2120 GMT",
+        "sha1": "68:D4:5D:78:97:0D:F8:D3:55:5E:2A:C7:45:EB:1C:51:57:17:F6:2E",
+        "subject": "CN=devnxt.rlms.sbi, C=IN, ST=Maharashtra, L=Mumbai, O=SBI"
+      },
+      "CRM.cer": {
+        "valid_from": "Dec 23 09:55:57 2020 GMT",
+        "valid_to": "Dec 23 09:55:57 2022 GMT",
+        "sha1": "55:76:28:D0:0C:2D:47:14:E4:31:81:BE:B9:35:7F:2A:AC:CA:B0:31",
+        "subject": "C=IN, ST=MAHARASHTRA, L=NAVI MUMBAI, O=STATE BANK OF INDIA, OU=CRM, CN=IIBSIGN"
+      },
+      "YONO_PublicKey.cer": {
+        "valid_from": "May 15 14:33:05 2025 GMT",
+        "valid_to": "May 15 14:33:05 2027 GMT",
+        "sha1": "DF:6D:7A:87:6E:2F:5D:DA:BE:76:92:87:9D:F9:AF:71:FD:3B:48:88",
+        "subject": "C=IN, ST=MAHARASHTRA, L=NAVI MUMBAI, O=STATE BANK OF INDIA, OU=IT-PROJECT LOTUS, CN=ib.sbiintouch.in"
+      },
+      "PAN_NSDL_jk.jks": {
+        "PAN_NSDL_jk.jks": {
+          "error": "Unable to read or wrong password"
+        }
+      },
+      "LEI.cer": {
+        "valid_from": "Dec  8 00:00:00 2023 GMT",
+        "valid_to": "Jan  7 23:59:59 2025 GMT",
+        "sha1": "D7:35:45:FA:D0:86:A0:2C:60:A2:76:47:B1:85:B0:8F:CB:59:39:DC",
+        "subject": "C=IN, ST=Maharashtra, L=Mumbai, O=Legal Entity Identifier India Ltd, CN=www.ccilindia-lei.co.in"
+      },
+      "SBICAPITALPublicBase64.cer": {
+        "valid_from": "May 12 09:27:40 2023 GMT",
+        "valid_to": "May 12 09:27:40 2026 GMT",
+        "sha1": "D5:6B:90:C6:9E:FC:23:14:50:14:C5:50:EE:2E:92:6A:CB:FF:2A:C5",
+        "subject": "C=IN, O=SBICAP SECURITIES LIMITED, OU=DVP-OPERATION, postalCode=400013, ST=Maharashtra, serialNumber=3F0F77C3025A3BAB8E7097775A27FF8F72EE20830F5750F7E6F989B2E1E78000, CN=KAUP SURESH SHENOY"
+      },
+      "oigIDAM.cer": {
+        "valid_from": "Dec 18 09:23:26 2025 GMT",
+        "valid_to": "Dec 18 18:29:59 2027 GMT",
+        "sha1": "CD:9B:43:74:9D:E6:F7:33:DB:5E:BA:62:B9:EF:F5:9A:3B:1A:24:70",
+        "subject": "CN=ENC_IDAM_PROD"
+      }
+    },
+    "RSAKeystore": {
+      "EISDS_TRUSTSTORE.jks": {
+        "EISDS_TRUSTSTORE.jks": {
+          "ckyc": {
+            "alias": "ckyc",
+            "owner": "CN=sbickyc.sbi, OU=GITC, O=SBI, L=BELAPUR, ST=MAHARASHTRA, C=IN",
+            "valid_from": "11/29/19 7:30 PM",
+            "valid_to": "11/28/21 7:30 PM",
+            "sha1": "47:E2:3B:81:05:F0:C7:6C:64:D8:CF:CA:CD:02:EC:10:1B:D3:AD:CD"
+          },
+          "sfd": {
+            "alias": "sfd",
+            "owner": "CN=GIQWSID05829, CN=REGISTER-APP-ST, OU=SF, O=SBI, ST=MH, C=IN",
+            "valid_from": "2/18/20 3:20 PM",
+            "valid_to": "2/18/22 3:30 PM",
+            "sha1": "4A:E4:86:87:9D:B4:A2:37:44:C2:AE:B2:C4:48:64:98:2F:81:F4:0F"
+          },
+          "cc": {
+            "alias": "cc",
+            "owner": "CN=CRM IVR EIS, OU=CRM, O=STATE BANK OF INDIA, L=MUMBAI, ST=MH, C=IN",
+            "valid_from": "2/29/20 12:03 PM",
+            "valid_to": "2/28/22 12:03 PM",
+            "sha1": "AF:0A:40:44:A3:3A:CC:F2:81:5D:14:4F:B0:B5:49:89:DC:3B:FE:0C"
+          },
+          "eis": {
+            "alias": "eis",
+            "owner": "CN=ENC_EIS_UAT, OU=EIS, O=SBI, L=Mumbai, ST=Maharashtra, C=IN",
+            "valid_from": "11/22/19 4:13 PM",
+            "valid_to": "11/22/21 4:23 PM",
+            "sha1": "F2:B1:2C:FC:53:8A:C2:DA:7E:25:FB:81:24:82:3B:54:41:D1:E4:6F"
+          },
+          "intch": {
+            "alias": "intch",
+            "owner": "CN=EIS_Intouch, OU=Intouch, O=SBI, L=Navi Mumbai, ST=Maharashtra, C=IN",
+            "valid_from": "6/18/20 12:40 PM",
+            "valid_to": "6/18/22 12:50 PM",
+            "sha1": "5A:9B:8C:AA:88:C1:DC:CC:2D:F3:EB:DF:54:E3:2C:10:BC:40:CA:BB"
+          },
+          "lospb": {
+            "alias": "lospb",
+            "owner": "CN=SBI, OU=GCC, O=NS, L=Delhi, ST=Delhi, C=IN",
+            "valid_from": "3/7/20 12:50 PM",
+            "valid_to": "3/7/21 12:50 PM",
+            "sha1": "16:24:78:4B:4A:6F:03:9E:7E:5A:B8:10:56:40:95:39:2E:4E:FC:44"
+          },
+          "yono": {
+            "alias": "yono",
+            "owner": "CN=ib.sbiintouch.in, OU=IT-PROJECT LOTUS, O=STATE BANK OF INDIA, L=NAVI MUMBAI, ST=MAHARASHTRA, C=IN",
+            "valid_from": "6/24/19 11:58 AM",
+            "valid_to": "6/23/21 11:58 AM",
+            "sha1": "AB:58:3E:CD:4F:E3:38:F2:21:23:17:74:90:25:60:D9:F3:0F:4E:1B"
+          },
+          "lp": {
+            "alias": "lp",
+            "owner": "CN=Demo",
+            "valid_from": "3/30/21 9:44 AM",
+            "valid_to": "3/30/23 9:44 AM",
+            "sha1": "C0:88:C2:6A:FB:FB:F7:F6:22:9F:D7:64:AF:2D:6F:13:71:A1:91:0B"
+          },
+          "receng": {
+            "alias": "receng",
+            "owner": "CN=ITTFRECONENGINEAUDITAPP03PROD, OU=IT-TF, O=State Bank of India, L=Belapur, ST=Maharashtra, C=IN",
+            "valid_from": "8/3/20 12:07 PM",
+            "valid_to": "8/3/22 12:17 PM",
+            "sha1": "FC:0A:8C:67:0B:77:42:9E:D5:B4:30:15:E5:AF:D6:BE:3D:68:B6:CF"
+          },
+          "uat": {
+            "alias": "uat",
+            "owner": "CN=SIT, OU=TCS, O=SBI, C=IN",
+            "valid_from": "1/14/20 5:56 PM",
+            "valid_to": "1/13/21 5:56 PM",
+            "sha1": "FF:D4:60:A0:53:E0:74:03:7B:C7:D4:C8:8F:24:D7:A6:EB:F8:F4:1E"
+          },
+          "rl": {
+            "alias": "rl",
+            "owner": "O=SBI, L=Mumbai, ST=Maharashtra, C=IN, CN=devnxt.rlms.sbi",
+            "valid_from": "3/20/20 2:10 PM",
+            "valid_to": "2/25/20 2:10 PM",
+            "sha1": "09:10:25:9E:CC:85:AB:52:D6:0B:D4:10:58:10:F4:6F:51:CE:52:A4"
+          },
+          "mob": {
+            "alias": "mob",
+            "owner": "CN=SBI_UPI_PAN_PROD, OU=UPI, O=SBI, L=Mumbai, ST=Maharashtra, C=IN",
+            "valid_from": "2/28/20 7:45 PM",
+            "valid_to": "2/27/22 7:45 PM",
+            "sha1": "8A:3F:F5:8D:7B:FD:4E:34:AE:C8:BC:73:83:AB:83:DA:88:D4:4E:BB"
+          },
+          "cloan": {
+            "alias": "cloan",
+            "owner": "CN=sbillms.statebanktimes.in, OU=LLMS, O=SBI, L=MUMBAI, ST=MAHARASHTRA, C=IN",
+            "valid_from": "3/2/20 12:25 PM",
+            "valid_to": "3/2/22 12:35 PM",
+            "sha1": "CC:B8:A7:12:C0:23:F7:09:3A:0F:C4:AB:3D:44:5A:CF:48:25:2C:C8"
+          },
+          "scfu": {
+            "alias": "scfu",
+            "owner": "CN=SCFU, O=SBI, ST=Maharashtra, C=in",
+            "valid_from": "8/20/20 5:38 PM",
+            "valid_to": "8/20/21 5:38 PM",
+            "sha1": "84:30:46:13:AF:B6:4B:4A:F1:BE:DC:FD:39:CA:75:F9:22:DA:A5:25"
+          },
+          "atm": {
+            "alias": "atm",
+            "owner": "CN=bems-crypto, OU=IT-ATM, O=SBI, L=NAVI MUMBAI, ST=MH, C=IN",
+            "valid_from": "7/30/20 8:25 PM",
+            "valid_to": "7/30/22 8:35 PM",
+            "sha1": "11:2F:9B:78:DE:37:60:6F:7B:DE:B2:5D:3D:B0:BE:37:9A:D8:4A:4B"
+          }
+        }
+      },
+      "GRC.cer": {
+        "valid_from": "Apr 26 10:20:58 2021 GMT",
+        "valid_to": "Apr 26 10:20:58 2023 GMT",
+        "sha1": "30:18:58:5F:5E:BE:CB:FE:0F:29:56:4D:8C:39:A2:40:4C:68:56:0C",
+        "subject": "C=IN, ST=MAHARASHTRA, L=NAVI MUMBAI, O=SBI, OU=GRC SP2, CN=G26903S163, emailAddress=grc.helpdesk@sbi.co.in"
+      },
+      "key.jks": {
+        "key.jks": {
+          "smsgateway": {
+            "alias": "smsgateway",
+            "owner": "EMAILADDRESS=dgmit.pe2@sbi.co.in, CN=bulksmsapi.sbi.co.in, OU=PE-II, O=STATE BANK OF INDIA, L=BELAPUR, ST=Maharashtra, C=IN",
+            "valid_from": "8/31/19 5:16 PM",
+            "valid_to": "8/30/21 5:16 PM",
+            "sha1": "B3:10:32:F6:FD:D7:CB:52:DF:23:B7:45:7D:FE:6C:4B:C3:26:25:64"
+          }
+        }
+      },
+      "i_collect_key.cer": {
+        "valid_from": "May 14 00:00:00 2024 GMT",
+        "valid_to": "Jun 14 23:59:59 2025 GMT",
+        "sha1": "B9:13:94:49:95:F5:B7:C1:AB:53:C0:2B:0F:D1:7D:37:9D:D8:06:C2",
+        "subject": "jurisdictionC=IN, businessCategory=Government Entity, serialNumber=Government Entity, C=IN, ST=Maharashtra, L=Mumbai, O=STATE BANK OF INDIA, CN=www.onlinesbi.sbi"
+      },
+      "LP.cer": {
+        "valid_from": "Mar 30 07:23:51 2020 GMT",
+        "valid_to": "Mar 30 07:23:51 2021 GMT",
+        "sha1": "8A:EA:7A:D6:4A:79:50:28:4B:2B:2D:4D:C7:E4:82:37:D1:14:01:9B",
+        "subject": "CN=Demo"
+      },
+      "YonoIBCert.cer": {
+        "valid_from": "Jun 24 06:28:28 2019 GMT",
+        "valid_to": "Jun 23 06:28:28 2021 GMT",
+        "sha1": "AB:58:3E:CD:4F:E3:38:F2:21:23:17:74:90:25:60:D9:F3:0F:4E:1B",
+        "subject": "C=IN, ST=MAHARASHTRA, L=NAVI MUMBAI, O=STATE BANK OF INDIA, OU=IT-PROJECT LOTUS, CN=ib.sbiintouch.in"
+      },
+      "RL.cer": {
+        "valid_from": "Mar 20 08:40:12 2020 GMT",
+        "valid_to": "Feb 25 08:40:12 2120 GMT",
+        "sha1": "09:10:25:9E:CC:85:AB:52:D6:0B:D4:10:58:10:F4:6F:51:CE:52:A4",
+        "subject": "CN=devnxt.rlms.sbi, C=IN, ST=Maharashtra, L=Mumbai, O=SBI"
+      },
+      "RL1.cer": {
+        "valid_from": "Mar 20 08:40:12 2020 GMT",
+        "valid_to": "Feb 25 08:40:12 2120 GMT",
+        "sha1": "09:10:25:9E:CC:85:AB:52:D6:0B:D4:10:58:10:F4:6F:51:CE:52:A4",
+        "subject": "CN=devnxt.rlms.sbi, C=IN, ST=Maharashtra, L=Mumbai, O=SBI"
+      },
+      "certificate_atm_cardBlock.cer": {
+        "valid_from": "Sep  8 04:52:33 2020 GMT",
+        "valid_to": "Sep  3 04:52:33 2040 GMT",
+        "sha1": "F5:86:67:21:A6:03:C2:6D:A7:EF:0B:C3:C8:2F:70:D0:13:99:0C:63",
+        "subject": "C=IN, ST=MUMBAI, L=MUMBAI, O=SBI, OU=DCMS, CN=SBI, emailAddress=dcmsteam@sbi.co.in"
+      },
+      "ENC_EIS.cer": {
+        "valid_from": "Jan  6 09:06:29 2023 GMT",
+        "valid_to": "Jan  5 09:06:29 2025 GMT",
+        "sha1": "DF:79:5F:D1:9F:4A:70:3B:F8:9E:CA:A2:88:31:D0:AD:08:52:32:10",
+        "subject": "C=IN, ST=Maharashtra, L=Mumbai, O=SBI, OU=EIS, CN=ENC_EIS"
+      },
+      "EIS_ENC.jks": {
+        "EIS_ENC.jks": {
+          "error": "Unable to read or wrong password"
+        }
+      },
+      "pensionProdRSA.cer": {
+        "valid_from": "Oct 10 13:16:13 2019 GMT",
+        "valid_to": "Oct 10 13:26:13 2021 GMT",
+        "sha1": "C1:2C:FE:16:7A:15:35:4A:6B:8F:C9:BB:65:D2:2E:F0:B1:4D:58:F2",
+        "subject": "C=IN, ST=MH, L=Navi Mumbai, O=SBI, OU=Belapur, CN=penapp1.pension.sbi"
+      },
+      "LOS_AGRI_PUBLIC.cer": {
+        "valid_from": "Jul 14 06:42:30 2022 GMT",
+        "valid_to": "Jul 13 06:42:30 2024 GMT",
+        "sha1": "A4:AF:55:36:19:40:55:CF:B8:A3:D8:2C:1C:14:F2:3E:E9:EC:F9:D4",
+        "subject": "C=IN, ST=MAHARASHTRA, L=NAVI MUMBAI, O=STATE BANK OF INDIA, OU=IT-Corporate SME Loans Department, CN=*.statebanktimes.in"
+      },
+      "NE_CBS_PUB.pem": {
+        "error": "Unable to read certificate"
+      }
+    }
+  }
+}
