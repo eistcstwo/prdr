@@ -5,6 +5,7 @@ import socket
 import subprocess
 import platform
 from datetime import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # ================== CONFIG ==================
 OUTPUT_DIR = "./prDrSync"
@@ -47,7 +48,6 @@ def read_etc_hosts():
                     hosts_data.append(line)
     except:
         return {"error": "Unable to read /etc/hosts"}
-
     return hosts_data
 
 
@@ -56,7 +56,6 @@ def parse_openssl_cert(file_path):
     cmd = ["openssl", "x509", "-in", file_path,
            "-noout", "-startdate", "-enddate",
            "-fingerprint", "-subject"]
-
     output = run(cmd)
     if not output:
         return {"error": "Unable to read certificate"}
@@ -71,86 +70,94 @@ def parse_openssl_cert(file_path):
             data["sha1"] = line.split("=", 1)[1]
         elif line.startswith("subject="):
             data["subject"] = line.split("=", 1)[1]
-
     return data
 
 
-# ---------- KEYTOOL ----------
-def list_jks_aliases(store_path):
-    cmd = ["keytool", "-list",
-           "-keystore", store_path,
-           "-storepass", JKS_PASSWORD]
-
-    output = run(cmd)
-    if not output:
-        return []
-
-    aliases = []
-    for line in output.splitlines():
-        if "trustedCertEntry" in line or "PrivateKeyEntry" in line:
-            alias = line.split(",")[0].strip()
-            aliases.append(alias)
-
-    return aliases
-
-
-def parse_jks_cert(store_path, alias):
-    cmd = ["keytool", "-list", "-v",
-           "-keystore", store_path,
-           "-storepass", JKS_PASSWORD,
-           "-alias", alias]
-
-    output = run(cmd)
-    if not output:
-        return {"error": "Unable to read alias"}
-
-    data = {"alias": alias}
-
-    for line in output.splitlines():
-        if "Valid from:" in line:
-            parts = line.split("until:")
-            data["valid_from"] = parts[0].split("from:")[1].strip()
-            data["valid_to"] = parts[1].strip()
-        elif "SHA1:" in line:
-            data["sha1"] = line.split("SHA1:")[1].strip()
-        elif "Owner:" in line:
-            data["owner"] = line.split("Owner:")[1].strip()
-
-    return data
-
-
-def read_jks_store(path, name):
+# ---------- KEYTOOL — single call for entire store ----------
+def read_jks_store(path):
+    """
+    One keytool -list -v call dumps ALL aliases at once.
+    We then split on the '*' separator lines and parse each block.
+    Previously: 1 call per alias (40 aliases = 40 subprocess calls).
+    Now: always 1 call regardless of how many aliases exist.
+    """
     if not os.path.exists(path):
-        return {name: {"error": "Not found"}}
+        return {"error": "Not found"}
 
-    aliases = list_jks_aliases(path)
-    if not aliases:
-        return {name: {"error": "Unable to read or wrong password"}}
+    output = run(["keytool", "-list", "-v",
+                  "-keystore", path,
+                  "-storepass", JKS_PASSWORD])
+    if not output:
+        return {"error": "Unable to read or wrong password"}
 
     certs = {}
-    for alias in aliases:
-        certs[alias] = parse_jks_cert(path, alias)
 
-    return {name: certs}
+    # keytool separates entries with lines of '*'
+    blocks = output.split("*******************************************")
+
+    for block in blocks:
+        lines = block.strip().splitlines()
+        if not lines:
+            continue
+
+        data = {}
+        alias = None
+
+        for line in lines:
+            line = line.strip()
+            if line.lower().startswith("alias name:"):
+                alias = line.split(":", 1)[1].strip()
+                data["alias"] = alias
+            elif line.startswith("Owner:"):
+                data["owner"] = line.split(":", 1)[1].strip()
+            elif "Valid from:" in line:
+                parts = line.split("until:")
+                data["valid_from"] = parts[0].split("from:")[1].strip()
+                data["valid_to"] = parts[1].strip() if len(parts) > 1 else ""
+            elif "SHA1:" in line:
+                data["sha1"] = line.split("SHA1:")[1].strip()
+
+        if alias and len(data) > 1:
+            certs[alias] = data
+
+    if not certs:
+        return {"error": "No certificates found or wrong password"}
+
+    return certs
 
 
-# ---------- DIRECTORY CERT READER ----------
+# ---------- DIRECTORY CERT READER (parallel) ----------
+def _read_file(file_name, full_path):
+    """Worker: parse a single cert or jks file."""
+    if file_name.endswith((".cer", ".crt", ".pem", ".der")):
+        return file_name, parse_openssl_cert(full_path)
+    elif file_name.endswith(".jks"):
+        return file_name, read_jks_store(full_path)
+    return None, None
+
+
 def read_cert_directory(directory):
+    """
+    Parallel reads — all cert files in the directory are processed
+    concurrently instead of one by one.
+    """
     if not os.path.isdir(directory):
         return {"error": "Directory not found"}
 
+    files = [
+        (f, os.path.join(directory, f))
+        for f in os.listdir(directory)
+        if os.path.isfile(os.path.join(directory, f))
+        and f.endswith((".cer", ".crt", ".pem", ".der", ".jks"))
+    ]
+
     certs = {}
-    for file_name in os.listdir(directory):
-        full_path = os.path.join(directory, file_name)
-
-        if not os.path.isfile(full_path):
-            continue
-
-        if file_name.endswith((".cer", ".crt", ".pem", ".der")):
-            certs[file_name] = parse_openssl_cert(full_path)
-
-        elif file_name.endswith(".jks"):
-            certs[file_name] = read_jks_store(full_path, file_name)
+    with ThreadPoolExecutor(max_workers=8) as executor:
+        futures = {executor.submit(_read_file, name, path): name for name, path in files}
+        for future in as_completed(futures):
+            file_name, result = future.result()
+            if file_name and result is not None:
+                certs[file_name] = result
 
     return certs
 
@@ -159,15 +166,27 @@ def read_cert_directory(directory):
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+    # Run the four certificate store reads in parallel
+    with ThreadPoolExecutor(max_workers=4) as executor:
+        f_truststore  = executor.submit(read_jks_store, TRUSTSTORE_PATH)
+        f_keystore    = executor.submit(read_jks_store, KEYSTORE_PATH)
+        f_endpoint    = executor.submit(read_cert_directory, ENDPOINT_PUBLIC_PATH)
+        f_rsakeystore = executor.submit(read_cert_directory, RSA_KEYSTORE_PATH)
+
+        truststore  = f_truststore.result()
+        keystore    = f_keystore.result()
+        endpoint    = f_endpoint.result()
+        rsakeystore = f_rsakeystore.result()
+
     snapshot = {
         "timestamp": datetime.now().isoformat(),
         "system": get_system_info(),
         "etc_hosts": read_etc_hosts(),
         "certificates": {
-            "Truststore": read_jks_store(TRUSTSTORE_PATH, "Truststore"),
-            "Keystore": read_jks_store(KEYSTORE_PATH, "Keystore"),
-            "EndPoint_Public": read_cert_directory(ENDPOINT_PUBLIC_PATH),
-            "RSAKeystore": read_cert_directory(RSA_KEYSTORE_PATH)
+            "Truststore":      truststore,
+            "Keystore":        keystore,
+            "EndPoint_Public": endpoint,
+            "RSAKeystore":     rsakeystore,
         }
     }
 
