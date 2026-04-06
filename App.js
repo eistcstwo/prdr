@@ -3,9 +3,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 const GET_ALL_IPS_URL = "https://10.191.171.12:5443/EISHOME/prDrSync/getAllIps/";
 const API_URL         = "https://10.191.171.12:5443/EISHOME/prDrSync/checkSyncIPSpecific/";
 
-// Build PR→DR pairs from fetched IPs
-// 10.188.24.x → PR,  10.177.40.x → DR
-// 10.188.25.x → PR,  10.177.41.x → DR
 function buildPairs(serverIps) {
   const ipSet = new Set(serverIps);
   const pairs = [];
@@ -15,7 +12,7 @@ function buildPairs(serverIps) {
     const drThird = parts[2] === "24" ? "40" : parts[2] === "25" ? "41" : null;
     if (!drThird) continue;
     const dr = `10.177.${drThird}.${parts[3]}`;
-    if (ipSet.has(dr) || true) { // include even if DR not in fetched list — API will handle errors
+    if (ipSet.has(dr) || true) {
       pairs.push({ pr, dr, id: `${pr}|${dr}` });
     }
   }
@@ -27,232 +24,274 @@ const GROUPS = [
   { id: "b", label: "SUBSET B", sublabel: "10.188.25.x  /  10.177.41.x", prefix: "10.188.25." },
 ];
 
-const C = {
-  bg: "#070910", surface: "#0b0d16", card: "#0f1220",
-  cardHover: "#131628", border: "#181e30", borderMid: "#1f2840",
-  accent: "#4f8ef7", accentDim: "rgba(79,142,247,0.15)",
-  green: "#00d68f", greenBg: "rgba(0,214,143,0.08)", greenBorder: "rgba(0,214,143,0.22)",
-  red: "#ff4060", redBg: "rgba(255,64,96,0.08)", redBorder: "rgba(255,64,96,0.22)",
-  amber: "#f5a623", amberBg: "rgba(245,166,35,0.08)", amberBorder: "rgba(245,166,35,0.22)",
-  text: "#d8e4f5", textSub: "#6b7fa6", textMuted: "#323d58",
+// Theme definitions
+const DARK = {
+  bg: "#070910", surface: "#0c0f1a", card: "#101425",
+  cardHover: "#141829", border: "#1a2035", borderMid: "#222d48",
+  accent: "#4f8ef7", accentDim: "rgba(79,142,247,0.12)",
+  green: "#00d68f", greenBg: "rgba(0,214,143,0.08)", greenBorder: "rgba(0,214,143,0.25)",
+  red: "#ff4060", redBg: "rgba(255,64,96,0.08)", redBorder: "rgba(255,64,96,0.25)",
+  amber: "#f5a623", amberBg: "rgba(245,166,35,0.08)", amberBorder: "rgba(245,166,35,0.25)",
+  text: "#e8f0fc", textSub: "#8294b8", textMuted: "#3d4f72",
+  statBg: "#0d1120",
+  inputBg: "#0d1120",
+  headerBg: "#0a0d18",
+  shadowColor: "rgba(0,0,0,0.6)",
 };
 
-const css = `
+const LIGHT = {
+  bg: "#f0f3fa", surface: "#ffffff", card: "#ffffff",
+  cardHover: "#f7f9ff", border: "#dde4f0", borderMid: "#c5d0e8",
+  accent: "#2563eb", accentDim: "rgba(37,99,235,0.10)",
+  green: "#059669", greenBg: "rgba(5,150,105,0.08)", greenBorder: "rgba(5,150,105,0.30)",
+  red: "#dc2626", redBg: "rgba(220,38,38,0.06)", redBorder: "rgba(220,38,38,0.30)",
+  amber: "#d97706", amberBg: "rgba(217,119,6,0.08)", amberBorder: "rgba(217,119,6,0.30)",
+  text: "#111827", textSub: "#4b5e80", textMuted: "#9ca8bf",
+  statBg: "#f5f7fd",
+  inputBg: "#f5f7fd",
+  headerBg: "#ffffff",
+  shadowColor: "rgba(0,0,0,0.08)",
+};
+
+function makeCSS(C, isDark) {
+  return `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body, #root { height: 100%; width: 100%; overflow: hidden; }
-  .subnet-scroll-area::-webkit-scrollbar { width: 4px; }
-  .subnet-scroll-area::-webkit-scrollbar-thumb { background: #1f2840; border-radius: 3px; }
-  body { background: ${C.bg}; color: ${C.text}; font-family: 'Courier New', Courier, monospace; }
-  ::-webkit-scrollbar { width: 4px; height: 4px; }
-  ::-webkit-scrollbar-track { background: ${C.surface}; }
-  ::-webkit-scrollbar-thumb { background: ${C.borderMid}; border-radius: 3px; }
+  body { background: ${C.bg}; color: ${C.text}; font-family: 'Inter', 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif; -webkit-font-smoothing: antialiased; }
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: ${C.borderMid}; border-radius: 4px; }
 
   @keyframes spin    { to { transform: rotate(360deg); } }
   @keyframes shimmer { 0%{background-position:-600px 0} 100%{background-position:600px 0} }
   @keyframes blink   { 0%,100%{opacity:1} 50%{opacity:0.3} }
-  @keyframes cardPageIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes cardPageIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeSlideIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
   @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes themeSwitch { from{opacity:0.6} to{opacity:1} }
 
-  .card-page-in { animation: cardPageIn 0.2s ease forwards; }
-
-  /* ── Cards ── */
-  .sc {
-    border-radius: 7px; border: 1px solid ${C.border};
-    background: ${C.card}; cursor: pointer; position: relative; overflow: hidden;
-    transition: transform 0.14s, border-color 0.14s, box-shadow 0.14s, background 0.14s;
-    user-select: none; padding: 11px 11px 11px 15px;
+  .theme-transition, .theme-transition * {
+    transition: background-color 0.25s ease, border-color 0.25s ease, color 0.2s ease, box-shadow 0.25s ease !important;
   }
-  .sc:hover { transform: translateY(-1px); background: ${C.cardHover}; }
-  .sc.synced  { border-color: ${C.greenBorder}; background: linear-gradient(150deg, ${C.card} 55%, rgba(0,214,143,0.05)); }
-  .sc.synced:hover  { border-color: rgba(0,214,143,0.45); box-shadow: 0 4px 20px rgba(0,214,143,0.09); }
-  .sc.drifted { border-color: ${C.redBorder};   background: linear-gradient(150deg, ${C.card} 55%, rgba(255,64,96,0.05)); }
-  .sc.drifted:hover { border-color: rgba(255,64,96,0.45); box-shadow: 0 4px 20px rgba(255,64,96,0.1); }
-  .sc.errored { border-color: ${C.amberBorder}; background: linear-gradient(150deg, ${C.card} 55%, rgba(245,166,35,0.04)); }
 
-  .sc-bar { position:absolute; left:0; top:0; bottom:0; width:3px; border-radius:7px 0 0 7px; }
-  .sc-bar.synced  { background:${C.green}; box-shadow:0 0 8px ${C.green}88; }
-  .sc-bar.drifted { background:${C.red};   box-shadow:0 0 8px ${C.red}88; }
+  .card-page-in { animation: cardPageIn 0.22s ease forwards; }
+
+  /* ── Server Cards ── */
+  .sc {
+    border-radius: 10px;
+    border: 1px solid ${C.border};
+    background: ${C.card};
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    user-select: none;
+    padding: 14px 14px 12px 18px;
+    box-shadow: 0 1px 3px ${C.shadowColor};
+  }
+  .sc:hover {
+    transform: translateY(-2px);
+    background: ${C.cardHover};
+    box-shadow: 0 6px 20px ${C.shadowColor};
+  }
+  .sc.synced  { border-color: ${C.greenBorder}; background: ${isDark ? `linear-gradient(150deg, ${C.card} 60%, rgba(0,214,143,0.04))` : `linear-gradient(150deg, #fff 60%, rgba(5,150,105,0.03))`}; }
+  .sc.synced:hover  { border-color: ${isDark ? "rgba(0,214,143,0.5)" : "rgba(5,150,105,0.5)"}; box-shadow: 0 6px 24px ${isDark ? "rgba(0,214,143,0.10)" : "rgba(5,150,105,0.12)"}; }
+  .sc.drifted { border-color: ${C.redBorder}; background: ${isDark ? `linear-gradient(150deg, ${C.card} 60%, rgba(255,64,96,0.04))` : `linear-gradient(150deg, #fff 60%, rgba(220,38,38,0.03))`}; }
+  .sc.drifted:hover { border-color: ${isDark ? "rgba(255,64,96,0.5)" : "rgba(220,38,38,0.5)"}; box-shadow: 0 6px 24px ${isDark ? "rgba(255,64,96,0.10)" : "rgba(220,38,38,0.10)"}; }
+  .sc.errored { border-color: ${C.amberBorder}; }
+
+  .sc-bar { position:absolute; left:0; top:0; bottom:0; width:4px; border-radius:10px 0 0 10px; }
+  .sc-bar.synced  { background:${C.green}; box-shadow:0 0 10px ${C.green}66; }
+  .sc-bar.drifted { background:${C.red};   box-shadow:0 0 10px ${C.red}66; }
   .sc-bar.errored { background:${C.amber}; }
-  .sc-bar.pending { background:${C.borderMid}; }
-  .sc-bar.loading { background:${C.accent}; animation:blink 1s ease infinite; }
+  .sc-bar.pending { background:${C.border}; }
+  .sc-bar.loading { background:${C.accent}; animation:blink 1.2s ease infinite; }
 
   .sc-shimmer {
-    position:absolute; inset:0; pointer-events:none; border-radius:7px;
-    background:linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.025) 50%, transparent 100%);
-    background-size:600px 100%; animation:shimmer 1.5s infinite;
+    position:absolute; inset:0; pointer-events:none; border-radius:10px;
+    background:linear-gradient(90deg, transparent 0%, ${isDark ? "rgba(255,255,255,0.03)" : "rgba(255,255,255,0.8)"} 50%, transparent 100%);
+    background-size:600px 100%; animation:shimmer 1.6s infinite;
   }
 
+  /* ── Status Labels ── */
   .slabel {
-    font-size:10px; font-weight:700; letter-spacing:0.08em;
-    border-radius:3px; padding:2px 6px; display:inline-block; white-space:nowrap;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    border-radius: 5px;
+    padding: 3px 8px;
+    display: inline-block;
+    white-space: nowrap;
+    text-transform: uppercase;
   }
   .slabel.synced  { color:${C.green}; background:${C.greenBg}; border:1px solid ${C.greenBorder}; }
   .slabel.drifted { color:${C.red};   background:${C.redBg};   border:1px solid ${C.redBorder}; }
   .slabel.errored { color:${C.amber}; background:${C.amberBg}; border:1px solid ${C.amberBorder}; }
-  .slabel.loading { color:${C.accent}; background:${C.accentDim}; border:1px solid rgba(79,142,247,0.3); }
-  .slabel.pending { color:${C.textMuted}; border:1px solid ${C.border}; }
+  .slabel.loading { color:${C.accent}; background:${C.accentDim}; border:1px solid rgba(79,142,247,0.25); }
+  .slabel.pending { color:${C.textMuted}; border:1px solid ${C.border}; background: ${isDark ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.03)"}; }
 
   /* ── Buttons ── */
   .btn {
     display:inline-flex; align-items:center; gap:6px;
-    border:none; border-radius:6px; cursor:pointer;
-    font-family:'Courier New',monospace; font-size:11px; font-weight:700;
-    letter-spacing:0.08em; padding:7px 14px; text-transform:uppercase;
-    transition:all 0.13s; flex-shrink:0;
+    border:none; border-radius:7px; cursor:pointer;
+    font-family: inherit;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 0.04em; padding: 8px 16px;
+    transition: all 0.14s ease; flex-shrink: 0;
   }
-  .btn:active { transform:scale(0.97); }
-  .btn:disabled { opacity:0.35; cursor:not-allowed; }
-  .btn-primary { background:${C.accent}; color:#fff; }
-  .btn-primary:hover:not(:disabled) { background:#3a78e8; box-shadow:0 0 18px rgba(79,142,247,0.4); }
-  .btn-ghost { background:transparent; color:${C.textSub}; border:1px solid ${C.border}; }
-  .btn-ghost:hover:not(:disabled) { border-color:${C.borderMid}; color:${C.text}; }
+  .btn:active { transform: scale(0.97); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary { background:${C.accent}; color:#fff; box-shadow: 0 2px 8px ${isDark ? "rgba(79,142,247,0.3)" : "rgba(37,99,235,0.25)"}; }
+  .btn-primary:hover:not(:disabled) { filter: brightness(1.1); box-shadow: 0 4px 18px ${isDark ? "rgba(79,142,247,0.45)" : "rgba(37,99,235,0.4)"}; }
+  .btn-ghost { background: transparent; color:${C.textSub}; border: 1px solid ${C.border}; }
+  .btn-ghost:hover:not(:disabled) { border-color:${C.borderMid}; color:${C.text}; background: ${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"}; }
   .btn-stop { background:${C.redBg}; color:${C.red}; border:1px solid ${C.redBorder}; }
-  .btn-stop:hover { background:rgba(255,64,96,0.15); }
+  .btn-stop:hover { background:${isDark ? "rgba(255,64,96,0.15)" : "rgba(220,38,38,0.12)"}; }
   .btn-csv { background:${C.greenBg}; color:${C.green}; border:1px solid ${C.greenBorder}; }
-  .btn-csv:hover { background:rgba(0,214,143,0.14); }
+  .btn-csv:hover { background:${isDark ? "rgba(0,214,143,0.14)" : "rgba(5,150,105,0.12)"}; }
 
-  /* ── Carousel nav arrow buttons ── */
+  /* ── Theme Toggle ── */
+  .theme-toggle {
+    display: flex; align-items: center; gap: 8px;
+    background: ${isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"};
+    border: 1px solid ${C.border};
+    border-radius: 24px; padding: 4px 6px; cursor: pointer;
+    transition: all 0.2s ease; flex-shrink: 0;
+  }
+  .theme-toggle:hover { border-color: ${C.borderMid}; background: ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}; }
+  .tt-knob {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; transition: all 0.25s ease;
+    background: ${isDark ? "rgba(255,255,255,0.1)" : "#fff"};
+    box-shadow: 0 1px 4px ${C.shadowColor};
+  }
+  .tt-label { font-size: 11px; font-weight: 600; color: ${C.textSub}; padding: 0 4px; letter-spacing: 0.04em; }
+
+  /* ── Nav arrows ── */
   .car-btn {
     display:flex; align-items:center; justify-content:center;
-    width:40px; height:40px; border-radius:8px; border:1px solid ${C.border};
-    background:${C.card}; color:${C.textSub}; cursor:pointer;
-    font-size:18px; transition:all 0.15s; flex-shrink:0;
-    font-family:monospace; user-select:none;
+    width:36px; height:36px; border-radius:8px; border:1px solid ${C.border};
+    background: ${C.card}; color:${C.textSub}; cursor:pointer;
+    font-size:16px; transition:all 0.15s; flex-shrink:0; user-select:none;
+    box-shadow: 0 1px 3px ${C.shadowColor};
   }
   .car-btn:hover:not(:disabled) {
     border-color:${C.accent}; color:${C.accent};
-    background:${C.accentDim}; box-shadow:0 0 14px rgba(79,142,247,0.2);
+    background:${C.accentDim}; box-shadow:0 0 14px ${isDark ? "rgba(79,142,247,0.2)" : "rgba(37,99,235,0.15)"};
   }
-  .car-btn:disabled { opacity:0.2; cursor:not-allowed; }
+  .car-btn:disabled { opacity:0.25; cursor:not-allowed; box-shadow: none; }
 
-  /* ── Page-within-subnet nav ── */
-  .pg-btn {
-    display:flex; align-items:center; justify-content:center;
-    width:30px; height:30px; border-radius:6px; border:1px solid ${C.border};
-    background:transparent; color:${C.textSub}; cursor:pointer;
-    font-size:14px; transition:all 0.13s; flex-shrink:0; font-family:monospace;
-  }
-  .pg-btn:hover:not(:disabled) { border-color:${C.accent}; color:${C.accent}; background:${C.accentDim}; }
-  .pg-btn:disabled { opacity:0.2; cursor:not-allowed; }
-
-  /* ── Page dots ── */
-  .pdot {
-    width:6px; height:6px; border-radius:50%; background:${C.border};
-    cursor:pointer; transition:all 0.18s; border:none; flex-shrink:0;
-  }
-  .pdot.on { background:${C.accent}; width:16px; border-radius:3px; }
-  .pdot:hover:not(.on) { background:${C.borderMid}; }
-
-  /* ── Subnet carousel dots ── */
+  /* ── Subnet dots ── */
   .subnet-dot {
-    height:3px; border-radius:2px; cursor:pointer;
-    transition:all 0.3s ease; border:none; flex-shrink:0;
+    height: 3px; border-radius: 2px; cursor: pointer;
+    transition: all 0.3s ease; border: none; flex-shrink: 0;
   }
-  .subnet-dot.on  { background:${C.accent}; width:32px; box-shadow:0 0 8px rgba(79,142,247,0.5); }
-  .subnet-dot.off { background:${C.border}; width:16px; }
-  .subnet-dot:hover.off { background:${C.borderMid}; }
+  .subnet-dot.on  { background:${C.accent}; width:28px; box-shadow:0 0 8px ${isDark ? "rgba(79,142,247,0.5)" : "rgba(37,99,235,0.4)"}; }
+  .subnet-dot.off { background:${C.borderMid}; width:14px; }
+  .subnet-dot.off:hover { background:${C.textMuted}; }
 
   /* ── Filter pills ── */
   .fp {
-    border:1px solid ${C.border}; background:transparent; color:${C.textSub};
-    border-radius:4px; padding:4px 10px; font-family:'Courier New',monospace;
-    font-size:11px; font-weight:700; cursor:pointer;
-    transition:all 0.13s; letter-spacing:0.06em; text-transform:uppercase;
+    border: 1px solid ${C.border};
+    background: transparent;
+    color: ${C.textSub};
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-family: inherit;
+    font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    transition: all 0.13s ease;
+    letter-spacing: 0.03em;
   }
-  .fp:hover { border-color:${C.borderMid}; color:${C.text}; }
-  .fp.on { background:${C.accent}; border-color:${C.accent}; color:#fff; }
+  .fp:hover { border-color:${C.borderMid}; color:${C.text}; background: ${isDark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"}; }
+  .fp.on { background:${C.accent}; border-color:${C.accent}; color:#fff; box-shadow: 0 2px 8px ${isDark ? "rgba(79,142,247,0.3)" : "rgba(37,99,235,0.25)"}; }
 
   /* ── Search ── */
   .srch {
-    background:${C.card}; border:1px solid ${C.border}; border-radius:5px;
-    color:${C.text}; padding:6px 11px; font-family:'Courier New',monospace;
-    font-size:12px; outline:none; width:175px; transition:border 0.13s;
+    background: ${C.inputBg};
+    border: 1px solid ${C.border};
+    border-radius: 7px;
+    color: ${C.text};
+    padding: 7px 13px;
+    font-family: inherit;
+    font-size: 13px; outline: none; width: 190px;
+    transition: border 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 1px 3px ${C.shadowColor};
   }
-  .srch:focus { border-color:${C.accent}; }
+  .srch:focus { border-color:${C.accent}; box-shadow: 0 0 0 3px ${C.accentDim}; }
   .srch::placeholder { color:${C.textMuted}; }
 
   /* ── Stat boxes ── */
-  .stat { background:${C.card}; border:1px solid ${C.border}; border-radius:7px; padding:10px 14px; flex:1; min-width:80px; }
-  .pbar { height:2px; background:${C.border}; border-radius:1px; overflow:hidden; margin-top:7px; }
-  .pfill { height:100%; border-radius:1px; transition:width 0.5s ease; }
+  .stat {
+    background: ${C.statBg};
+    border: 1px solid ${C.border};
+    border-radius: 10px;
+    padding: 12px 16px;
+    flex: 1; min-width: 90px;
+    box-shadow: 0 1px 3px ${C.shadowColor};
+  }
+  .pbar { height: 3px; background: ${C.border}; border-radius: 2px; overflow: hidden; margin-top: 8px; }
+  .pfill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
 
   /* ── Modal ── */
-  .overlay { position:fixed; inset:0; background:rgba(0,0,0,0.82); z-index:200; display:flex; align-items:center; justify-content:center; padding:20px; backdrop-filter:blur(5px); }
-  .modal { background:${C.surface}; border:1px solid ${C.borderMid}; border-radius:11px; width:100%; max-width:860px; max-height:90vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 32px 100px rgba(0,0,0,0.75); }
-  .mh { padding:16px 20px; border-bottom:1px solid ${C.border}; flex-shrink:0; display:flex; align-items:center; justify-content:space-between; }
-  .mb { padding:18px 20px; overflow-y:auto; flex:1; }
-  .mf { padding:12px 20px; border-top:1px solid ${C.border}; display:flex; gap:8px; justify-content:flex-end; flex-shrink:0; }
+  .overlay {
+    position: fixed; inset: 0;
+    background: ${isDark ? "rgba(0,0,0,0.85)" : "rgba(17,24,39,0.65)"};
+    z-index: 200; display: flex; align-items: center; justify-content: center;
+    padding: 20px; backdrop-filter: blur(6px);
+  }
+  .modal {
+    background: ${C.surface};
+    border: 1px solid ${C.border};
+    border-radius: 14px; width: 100%; max-width: 880px; max-height: 92vh;
+    display: flex; flex-direction: column; overflow: hidden;
+    box-shadow: 0 24px 80px ${isDark ? "rgba(0,0,0,0.8)" : "rgba(0,0,0,0.2)"};
+  }
+  .mh { padding: 18px 22px; border-bottom: 1px solid ${C.border}; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; }
+  .mb { padding: 20px 22px; overflow-y: auto; flex: 1; }
+  .mf { padding: 14px 22px; border-top: 1px solid ${C.border}; display: flex; gap: 8px; justify-content: flex-end; flex-shrink: 0; }
 
-  /* ── Diff rows ── */
-  .dr { background:${C.card}; border:1px solid ${C.border}; border-radius:6px; padding:10px 13px; margin-bottom:7px; }
-  .dr.d2 { border-left:3px solid ${C.red}; }
-  .dr.d1 { border-left:3px solid ${C.amber}; }
-
-  /* ── Diagnostic sections ── */
-  .diag-section { margin-bottom:22px; animation: fadeSlideIn 0.25s ease forwards; }
-  .diag-header {
-    display:flex; align-items:center; gap:10px; margin-bottom:12px;
-    padding-bottom:8px; border-bottom:1px solid ${C.border};
+  /* ── Diff entries ── */
+  .diff-entry {
+    background: ${C.card};
+    border: 1px solid ${C.border};
+    border-radius: 8px;
+    padding: 10px 14px;
+    display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap;
+    box-shadow: 0 1px 2px ${C.shadowColor};
   }
-  .diag-icon {
-    width:28px; height:28px; border-radius:7px; display:flex; align-items:center;
-    justify-content:center; font-size:13px; flex-shrink:0;
-  }
-  .diag-badge {
-    font-size:10px; font-weight:700; letter-spacing:0.08em;
-    border-radius:20px; padding:2px 8px; display:inline-flex; align-items:center; gap:4px;
-  }
-  .diff-table { width:100%; border-collapse:separate; border-spacing:0 5px; }
-  .diff-table th {
-    font-size:9px; font-weight:700; letter-spacing:0.1em; color:${C.textMuted};
-    text-align:left; padding:4px 10px; text-transform:uppercase;
-  }
-  .diff-row {
-    background:${C.card}; border-radius:6px;
-    animation: fadeSlideIn 0.2s ease forwards;
-  }
-  .diff-row td { padding:9px 10px; font-size:11px; vertical-align:top; }
-  .diff-row td:first-child { border-radius:6px 0 0 6px; border-left:3px solid transparent; }
-  .diff-row td:last-child  { border-radius:0 6px 6px 0; }
-  .diff-row.miss-dr td:first-child { border-left-color:${C.red}; }
-  .diff-row.miss-pr td:first-child { border-left-color:${C.amber}; }
 
   .val-chip {
-    display:inline-block; padding:2px 8px; border-radius:4px;
-    font-size:11px; font-weight:700; max-width:180px;
-    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    display: inline-block; padding: 2px 9px; border-radius: 5px;
+    font-size: 12px; font-weight: 600;
+    max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
-  .val-pr { background:rgba(0,214,143,0.1); color:${C.green}; border:1px solid rgba(0,214,143,0.2); }
-  .val-dr { background:rgba(255,64,96,0.1);  color:${C.red};   border:1px solid rgba(255,64,96,0.2); }
-  .val-empty { background:${C.border}; color:${C.textMuted}; font-style:italic; }
+  .val-pr { background: ${C.greenBg}; color: ${C.green}; border: 1px solid ${C.greenBorder}; }
+  .val-dr { background: ${C.redBg};   color: ${C.red};   border: 1px solid ${C.redBorder}; }
+  .val-empty { background: ${C.border}; color: ${C.textMuted}; font-style: italic; }
 
-  .summary-bar {
-    display:flex; gap:8px; padding:12px 16px; border-radius:8px; margin-bottom:18px;
-    background:${C.card}; border:1px solid ${C.border}; align-items:center; flex-wrap:wrap;
-  }
-  .summary-pill {
-    display:flex; align-items:center; gap:6px; padding:5px 12px;
-    border-radius:5px; font-size:11px; font-weight:700; letter-spacing:0.06em;
+  .spin-anim { animation: spin 0.75s linear infinite; }
+
+  /* ── Dividers ── */
+  .section-divider {
+    height: 1px;
+    background: ${C.border};
+    margin: 16px 0;
   }
 
-  .spin-anim { animation:spin 0.7s linear infinite; }
-  .tab-btn {
-    padding:6px 14px; border:none; background:transparent; cursor:pointer;
-    font-family:'Courier New',monospace; font-size:11px; font-weight:700;
-    letter-spacing:0.07em; text-transform:uppercase; transition:all 0.13s;
-    border-bottom:2px solid transparent; color:${C.textSub};
-  }
-  .tab-btn.on { color:${C.accent}; border-bottom-color:${C.accent}; }
-  .tab-btn:hover:not(.on) { color:${C.text}; }
-
-  /* ── Boot screen ── */
+  /* ── Boot ── */
   .boot-screen {
-    position:fixed; inset:0; background:${C.bg}; display:flex; flex-direction:column;
-    align-items:center; justify-content:center; gap:18px; z-index:500;
+    position: fixed; inset: 0; background: ${C.bg};
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 20px; z-index: 500;
     animation: fadeIn 0.3s ease;
   }
+
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes fadeSlideIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
 `;
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const oct = ip => ip.split(".")[3];
@@ -301,14 +340,30 @@ function cardState(r) {
   if (r.data?.status === "NOT IN SYNC") return "drifted";
   return "pending";
 }
-const STATE_LABEL = { synced:"IN SYNC", drifted:"OUT OF SYNC", errored:"ERROR", loading:"CHECKING", pending:"PENDING" };
+const STATE_LABEL = { synced:"In Sync", drifted:"Out of Sync", errored:"Error", loading:"Checking…", pending:"Pending" };
 
 // ─── Small Components ─────────────────────────────────────────────────────────
-function Spinner({ size=14, color=C.accent }) {
-  return <div className="spin-anim" style={{ width:size, height:size, border:`2px solid ${C.border}`, borderTopColor:color, borderRadius:"50%", flexShrink:0 }} />;
+function Spinner({ size=14, color }) {
+  return (
+    <div className="spin-anim" style={{
+      width: size, height: size,
+      border: `2px solid rgba(128,128,128,0.2)`,
+      borderTopColor: color,
+      borderRadius: "50%", flexShrink: 0
+    }} />
+  );
 }
 
-function ServerCard({ pair, result, onClick }) {
+function ThemeToggle({ isDark, onToggle }) {
+  return (
+    <button className="theme-toggle" onClick={onToggle} title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}>
+      <div className="tt-knob">{isDark ? "🌙" : "☀️"}</div>
+      <span className="tt-label">{isDark ? "DARK" : "LIGHT"}</span>
+    </button>
+  );
+}
+
+function ServerCard({ pair, result, onClick, C }) {
   const state = cardState(result);
   const diff = getDiff(result?.data);
   const diffCount = diff ? (diff.missing_in_env2?.length||0)+(diff.missing_in_env1?.length||0) : 0;
@@ -321,77 +376,98 @@ function ServerCard({ pair, result, onClick }) {
     <div className={cardCls} onClick={() => onClick(pair, result)}>
       <div className={`sc-bar ${state}`} />
       {state==="loading" && <div className="sc-shimmer" />}
-      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:8 }}>
-        <span style={{ fontSize:18, fontWeight:700, color:C.text }}>.{oct(pair.pr)}</span>
-        <div style={{ display:"flex", alignItems:"center", gap:5 }}>
-          {state==="loading" && <Spinner size={10} />}
+      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:10, gap:6 }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:2 }}>
+          <span style={{ fontSize:20, fontWeight:700, color:C.text, letterSpacing:"-0.01em", lineHeight:1 }}>
+            .{oct(pair.pr)}
+          </span>
+          <span style={{ fontSize:10, color:C.textMuted, fontWeight:500, letterSpacing:"0.04em" }}>OCTET</span>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:5, paddingTop:2 }}>
+          {state==="loading" && <Spinner size={10} color={C.accent} />}
           <span className={`slabel ${state}`}>{STATE_LABEL[state]}</span>
         </div>
       </div>
-      <div style={{ fontSize:10, lineHeight:1.75, color:C.textMuted }}>
-        <div><span style={{ marginRight:4 }}>PR</span><span style={{ color:C.textSub }}>{pair.pr}</span></div>
-        <div><span style={{ marginRight:4 }}>DR</span><span style={{ color:C.textSub }}>{pair.dr}</span></div>
+      <div style={{ display:"flex", flexDirection:"column", gap:3 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ fontSize:10, fontWeight:700, color:C.accent, letterSpacing:"0.06em", minWidth:18 }}>PR</span>
+          <span style={{ fontSize:11, color:C.textSub, fontFamily:"'SF Mono', 'Fira Code', monospace" }}>{pair.pr}</span>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+          <span style={{ fontSize:10, fontWeight:700, color:C.green, letterSpacing:"0.06em", minWidth:18 }}>DR</span>
+          <span style={{ fontSize:11, color:C.textSub, fontFamily:"'SF Mono', 'Fira Code', monospace" }}>{pair.dr}</span>
+        </div>
       </div>
       {state==="drifted" && diffCount>0 && (
-        <div style={{ marginTop:6, fontSize:10, color:C.red, fontWeight:700 }}>{diffCount} difference{diffCount!==1?"s":""}</div>
+        <div style={{ marginTop:8, display:"flex", alignItems:"center", gap:6 }}>
+          <div style={{ width:6, height:6, borderRadius:"50%", background:C.red, boxShadow:`0 0 6px ${C.red}` }} />
+          <span style={{ fontSize:11, color:C.red, fontWeight:600 }}>{diffCount} difference{diffCount!==1?"s":""}</span>
+        </div>
       )}
       {state==="errored" && (
-        <div style={{ marginTop:6, fontSize:10, color:C.amber, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{result.error}</div>
+        <div style={{ marginTop:8, fontSize:11, color:C.amber, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap", fontWeight:500 }}>
+          ⚠ {result.error}
+        </div>
       )}
     </div>
   );
 }
 
-function EntryList({ items, type, collapsed, onToggle }) {
+function EntryList({ items, type, collapsed, onToggle, C }) {
   if (!items || items.length === 0) return null;
   const isMissDR = type === "env2";
   const colorVal = isMissDR ? C.red : C.amber;
   const bgVal    = isMissDR ? C.redBg : C.amberBg;
-  const icon     = isMissDR ? "⬇" : "⬆";
+  const borderVal = isMissDR ? C.redBorder : C.amberBorder;
+  const icon     = isMissDR ? "↓" : "↑";
   const heading  = isMissDR
-    ? "Present on PR but missing on DR — DR needs to be updated"
-    : "Present on DR but missing on PR — needs investigation";
+    ? "Present on PR, missing on DR — DR needs to be updated"
+    : "Present on DR, missing on PR — needs investigation";
 
   return (
     <div style={{ marginBottom: 20 }}>
-      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10, paddingBottom:8, borderBottom:`1px solid ${C.border}` }}>
-        <div style={{ width:28, height:28, borderRadius:7, display:"flex", alignItems:"center", justifyContent:"center", background:bgVal, border:`1px solid ${colorVal}33`, flexShrink:0 }}>
-          <span style={{ color:colorVal, fontSize:13 }}>{icon}</span>
+      <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12, paddingBottom:10, borderBottom:`1px solid ${C.border}` }}>
+        <div style={{ width:30, height:30, borderRadius:8, display:"flex", alignItems:"center", justifyContent:"center", background:bgVal, border:`1px solid ${borderVal}`, flexShrink:0 }}>
+          <span style={{ color:colorVal, fontSize:14, fontWeight:700 }}>{icon}</span>
         </div>
         <div style={{ flex:1 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <span style={{ fontSize:11, fontWeight:700, color:colorVal, letterSpacing:"0.07em" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:2 }}>
+            <span style={{ fontSize:12, fontWeight:700, color:colorVal, letterSpacing:"0.05em" }}>
               {isMissDR ? "MISSING IN DR" : "MISSING IN PR"}
             </span>
-            <span style={{ fontSize:10, fontWeight:700, color:colorVal, background:`${colorVal}18`, border:`1px solid ${colorVal}33`, borderRadius:20, padding:"1px 8px" }}>
+            <span style={{ fontSize:11, fontWeight:700, color:colorVal, background:`${colorVal}18`, border:`1px solid ${colorVal}33`, borderRadius:20, padding:"2px 9px" }}>
               {items.length} {items.length === 1 ? "entry" : "entries"}
             </span>
           </div>
-          <div style={{ fontSize:11, color:C.textSub, marginTop:2 }}>{heading}</div>
+          <div style={{ fontSize:12, color:C.textSub, lineHeight:1.5 }}>{heading}</div>
         </div>
-        <button className="btn btn-ghost" style={{ padding:"3px 10px", fontSize:11 }} onClick={onToggle}>
+        <button className="btn btn-ghost" style={{ padding:"4px 11px", fontSize:11 }} onClick={onToggle}>
           {collapsed ? "SHOW" : "HIDE"}
         </button>
       </div>
       {!collapsed && (
-        <div style={{ display:"flex", flexDirection:"column", gap:5 }}>
+        <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
           {items.map((entry, i) => {
             const { name, port, trail } = parseEntry(entry);
             return (
-              <div key={i} style={{ background:C.card, border:`1px solid ${C.border}`, borderLeft:`3px solid ${colorVal}`, borderRadius:6, padding:"9px 12px", display:"flex", alignItems:"flex-start", gap:12, flexWrap:"wrap" }}>
-                <span style={{ fontSize:10, color:C.textMuted, fontWeight:700, minWidth:22, paddingTop:1 }}>{String(i+1).padStart(2,"0")}</span>
-                <span style={{ fontSize:12, fontWeight:700, color:colorVal, background:`${colorVal}12`, border:`1px solid ${colorVal}28`, borderRadius:4, padding:"2px 8px", flexShrink:0 }}>{name}</span>
+              <div key={i} className="diff-entry" style={{ borderLeft:`3px solid ${colorVal}` }}>
+                <span style={{ fontSize:11, color:C.textMuted, fontWeight:600, minWidth:24, paddingTop:1, fontFamily:"'SF Mono', 'Fira Code', monospace" }}>
+                  {String(i+1).padStart(2,"0")}
+                </span>
+                <span style={{ fontSize:12, fontWeight:700, color:colorVal, background:`${colorVal}12`, border:`1px solid ${colorVal}28`, borderRadius:5, padding:"2px 9px", flexShrink:0, fontFamily:"'SF Mono', 'Fira Code', monospace" }}>
+                  {name}
+                </span>
                 {port && (
                   <span style={{ fontSize:11, color:C.textMuted, flexShrink:0, paddingTop:2 }}>
-                    <span style={{ color:C.textMuted, marginRight:3 }}>PORT</span>
-                    <span style={{ color:C.textSub, fontWeight:700 }}>{port}</span>
+                    <span style={{ color:C.textMuted, marginRight:4, fontWeight:500 }}>PORT</span>
+                    <span style={{ color:C.textSub, fontWeight:700, fontFamily:"'SF Mono', 'Fira Code', monospace" }}>{port}</span>
                   </span>
                 )}
                 {trail.length > 0 && (
-                  <span style={{ fontSize:11, color:C.textMuted, flex:1, minWidth:120, paddingTop:2, lineHeight:1.5 }}>
+                  <span style={{ fontSize:11, color:C.textMuted, flex:1, minWidth:120, paddingTop:2, lineHeight:1.6 }}>
                     {trail.map((seg, si) => (
                       <span key={si}>
-                        {si > 0 && <span style={{ color:C.textMuted, margin:"0 4px" }}>›</span>}
+                        {si > 0 && <span style={{ color:C.textMuted, margin:"0 5px", fontSize:10 }}>›</span>}
                         <span style={{ color:C.textSub }}>{seg}</span>
                       </span>
                     ))}
@@ -406,7 +482,7 @@ function EntryList({ items, type, collapsed, onToggle }) {
   );
 }
 
-function DetailModal({ pair, result, onClose }) {
+function DetailModal({ pair, result, onClose, C }) {
   const [collapseDR, setCollapseDR] = useState(false);
   const [collapsePR, setCollapsePR] = useState(false);
 
@@ -423,98 +499,118 @@ function DetailModal({ pair, result, onClose }) {
     <div className="overlay" onClick={e => e.target===e.currentTarget && onClose()}>
       <div className="modal">
         <div className="mh">
-          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-            <div style={{ width:3, height:26, borderRadius:2, background:barColor, boxShadow:`0 0 8px ${barColor}88` }} />
+          <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+            <div style={{ width:4, height:30, borderRadius:2, background:barColor, boxShadow:`0 0 10px ${barColor}88` }} />
             <div>
-              <div style={{ fontSize:15, fontWeight:700, letterSpacing:"0.04em" }}>
-                Server Pair&nbsp;<span style={{ color:C.accent }}>.{oct(pair.pr)}</span>
-                <span className={`slabel ${state}`} style={{ marginLeft:10, verticalAlign:"middle" }}>{STATE_LABEL[state]}</span>
+              <div style={{ fontSize:16, fontWeight:700, letterSpacing:"0.02em", color:C.text, display:"flex", alignItems:"center", gap:10 }}>
+                Server Pair
+                <span style={{ color:C.accent, fontFamily:"'SF Mono', 'Fira Code', monospace" }}>.{oct(pair.pr)}</span>
+                <span className={`slabel ${state}`}>{STATE_LABEL[state]}</span>
               </div>
-              <div style={{ fontSize:11, color:C.textMuted, marginTop:3 }}>{result?.timestamp}</div>
+              {result?.timestamp && (
+                <div style={{ fontSize:12, color:C.textMuted, marginTop:3, fontWeight:400 }}>
+                  Last checked: {result.timestamp}
+                </div>
+              )}
             </div>
           </div>
-          <button className="btn btn-ghost" onClick={onClose} style={{ padding:"3px 9px", fontSize:14 }}>✕</button>
+          <button className="btn btn-ghost" onClick={onClose} style={{ padding:"5px 10px", fontSize:16, lineHeight:1 }}>✕</button>
         </div>
         <div className="mb">
           {result?.error && (
-            <div style={{ background:C.amberBg, border:`1px solid ${C.amberBorder}`, borderRadius:7, padding:"12px 16px", marginBottom:16 }}>
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:5 }}>
-                <span style={{ fontSize:16 }}>⚠</span>
-                <span style={{ fontSize:11, fontWeight:700, color:C.amber, letterSpacing:"0.07em" }}>REQUEST FAILED</span>
+            <div style={{ background:C.amberBg, border:`1px solid ${C.amberBorder}`, borderRadius:10, padding:"14px 18px", marginBottom:18 }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
+                <span style={{ fontSize:15 }}>⚠</span>
+                <span style={{ fontSize:12, fontWeight:700, color:C.amber, letterSpacing:"0.05em" }}>REQUEST FAILED</span>
               </div>
-              <div style={{ fontSize:12, color:C.textSub, lineHeight:1.6 }}>{result.error}</div>
-              <div style={{ marginTop:8, fontSize:11, color:C.textMuted }}>
-                Verify connectivity to <span style={{ color:C.text }}>{pair.pr}</span> and <span style={{ color:C.text }}>{pair.dr}</span>.
+              <div style={{ fontSize:13, color:C.textSub, lineHeight:1.65 }}>{result.error}</div>
+              <div style={{ marginTop:8, fontSize:12, color:C.textMuted }}>
+                Verify connectivity to{" "}
+                <span style={{ color:C.text, fontFamily:"'SF Mono', 'Fira Code', monospace" }}>{pair.pr}</span>
+                {" "}and{" "}
+                <span style={{ color:C.text, fontFamily:"'SF Mono', 'Fira Code', monospace" }}>{pair.dr}</span>.
               </div>
             </div>
           )}
-          <div style={{ display:"flex", gap:10, marginBottom:16, flexWrap:"wrap" }}>
-            <div style={{ flex:1, minWidth:140, background:C.card, border:`1px solid ${C.border}`, borderRadius:7, padding:"10px 14px" }}>
-              <div style={{ fontSize:9, color:C.textMuted, fontWeight:700, letterSpacing:"0.1em", marginBottom:2 }}>PR SERVER</div>
-              <div style={{ fontSize:13, color:C.accent, fontWeight:700 }}>{pair.pr}</div>
-              <div style={{ fontSize:10, color:C.textMuted, marginTop:2 }}>Primary / Production</div>
+
+          {/* IP Info cards */}
+          <div style={{ display:"flex", gap:10, marginBottom:18, flexWrap:"wrap" }}>
+            <div style={{ flex:1, minWidth:150, background:C.card, border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 16px", boxShadow:`0 1px 3px ${C.shadowColor}` }}>
+              <div style={{ fontSize:10, color:C.textMuted, fontWeight:700, letterSpacing:"0.08em", marginBottom:4 }}>PR SERVER</div>
+              <div style={{ fontSize:14, color:C.accent, fontWeight:700, fontFamily:"'SF Mono', 'Fira Code', monospace" }}>{pair.pr}</div>
+              <div style={{ fontSize:11, color:C.textMuted, marginTop:3, fontWeight:500 }}>Primary / Production</div>
             </div>
-            <div style={{ flex:1, minWidth:140, background:C.card, border:`1px solid ${C.border}`, borderRadius:7, padding:"10px 14px" }}>
-              <div style={{ fontSize:9, color:C.textMuted, fontWeight:700, letterSpacing:"0.1em", marginBottom:2 }}>DR SERVER</div>
-              <div style={{ fontSize:13, color:C.green, fontWeight:700 }}>{pair.dr}</div>
-              <div style={{ fontSize:10, color:C.textMuted, marginTop:2 }}>Disaster Recovery</div>
+            <div style={{ flex:1, minWidth:150, background:C.card, border:`1px solid ${C.border}`, borderRadius:10, padding:"12px 16px", boxShadow:`0 1px 3px ${C.shadowColor}` }}>
+              <div style={{ fontSize:10, color:C.textMuted, fontWeight:700, letterSpacing:"0.08em", marginBottom:4 }}>DR SERVER</div>
+              <div style={{ fontSize:14, color:C.green, fontWeight:700, fontFamily:"'SF Mono', 'Fira Code', monospace" }}>{pair.dr}</div>
+              <div style={{ fontSize:11, color:C.textMuted, marginTop:3, fontWeight:500 }}>Disaster Recovery</div>
             </div>
             {!isSynced && totalDiff > 0 && (
-              <div style={{ flex:1, minWidth:140, background:"rgba(255,64,96,0.06)", border:`1px solid ${C.redBorder}`, borderRadius:7, padding:"10px 14px" }}>
-                <div style={{ fontSize:9, color:C.textMuted, fontWeight:700, letterSpacing:"0.1em", marginBottom:2 }}>TOTAL ISSUES</div>
+              <div style={{ flex:1, minWidth:150, background:C.redBg, border:`1px solid ${C.redBorder}`, borderRadius:10, padding:"12px 16px", boxShadow:`0 1px 3px ${C.shadowColor}` }}>
+                <div style={{ fontSize:10, color:C.textMuted, fontWeight:700, letterSpacing:"0.08em", marginBottom:4 }}>TOTAL ISSUES</div>
                 <div style={{ display:"flex", alignItems:"baseline", gap:8 }}>
-                  <span style={{ fontSize:22, color:C.red, fontWeight:700, lineHeight:1 }}>{totalDiff}</span>
-                  <span style={{ fontSize:10, color:C.textMuted }}>entries differ</span>
+                  <span style={{ fontSize:26, color:C.red, fontWeight:800, lineHeight:1 }}>{totalDiff}</span>
+                  <span style={{ fontSize:12, color:C.textMuted, fontWeight:500 }}>entries differ</span>
                 </div>
-                <div style={{ display:"flex", gap:10, marginTop:4 }}>
-                  {missDR.length > 0 && <span style={{ fontSize:10, color:C.red }}>⬇ {missDR.length} in DR</span>}
-                  {missPR.length > 0 && <span style={{ fontSize:10, color:C.amber }}>⬆ {missPR.length} in PR</span>}
+                <div style={{ display:"flex", gap:12, marginTop:5 }}>
+                  {missDR.length > 0 && <span style={{ fontSize:11, color:C.red, fontWeight:600 }}>↓ {missDR.length} in DR</span>}
+                  {missPR.length > 0 && <span style={{ fontSize:11, color:C.amber, fontWeight:600 }}>↑ {missPR.length} in PR</span>}
                 </div>
               </div>
             )}
           </div>
+
           {isSynced && (
-            <div style={{ textAlign:"center", padding:"30px 0", background:"rgba(0,214,143,0.04)", borderRadius:10, border:`1px solid ${C.greenBorder}` }}>
-              <div style={{ fontSize:32, marginBottom:8 }}>✓</div>
-              <div style={{ fontSize:20, fontWeight:700, color:C.green, letterSpacing:"0.05em", marginBottom:6 }}>FULLY IN SYNC</div>
-              <div style={{ fontSize:13, color:C.textSub }}>No configuration drift detected between PR and DR.</div>
+            <div style={{ textAlign:"center", padding:"36px 0", background:C.greenBg, borderRadius:12, border:`1px solid ${C.greenBorder}` }}>
+              <div style={{ fontSize:36, marginBottom:10 }}>✓</div>
+              <div style={{ fontSize:22, fontWeight:800, color:C.green, letterSpacing:"0.04em", marginBottom:8 }}>FULLY IN SYNC</div>
+              <div style={{ fontSize:14, color:C.textSub, fontWeight:400, lineHeight:1.6 }}>No configuration drift detected between PR and DR.</div>
             </div>
           )}
           {!isSynced && diff && (
             <>
-              <EntryList items={missDR} type="env2" collapsed={collapseDR} onToggle={() => setCollapseDR(v => !v)} />
-              <EntryList items={missPR} type="env1" collapsed={collapsePR} onToggle={() => setCollapsePR(v => !v)} />
+              <EntryList items={missDR} type="env2" collapsed={collapseDR} onToggle={() => setCollapseDR(v => !v)} C={C} />
+              <EntryList items={missPR} type="env1" collapsed={collapsePR} onToggle={() => setCollapsePR(v => !v)} C={C} />
               {totalDiff === 0 && (
-                <div style={{ background:C.redBg, border:`1px solid ${C.redBorder}`, borderRadius:7, padding:"12px 16px" }}>
-                  <div style={{ fontSize:11, fontWeight:700, color:C.red, letterSpacing:"0.07em", marginBottom:4 }}>OUT OF SYNC — NO DIFF DETAIL</div>
-                  <div style={{ fontSize:12, color:C.textSub }}>The API reported this pair as out of sync but returned no specific entries.</div>
+                <div style={{ background:C.redBg, border:`1px solid ${C.redBorder}`, borderRadius:10, padding:"14px 18px" }}>
+                  <div style={{ fontSize:12, fontWeight:700, color:C.red, letterSpacing:"0.05em", marginBottom:5 }}>OUT OF SYNC — NO DIFF DETAIL</div>
+                  <div style={{ fontSize:13, color:C.textSub, lineHeight:1.6 }}>The API reported this pair as out of sync but returned no specific entries.</div>
                 </div>
               )}
             </>
           )}
         </div>
         <div className="mf">
-          <button className="btn btn-ghost" onClick={onClose}>CLOSE</button>
+          <button className="btn btn-ghost" onClick={onClose}>Close</button>
         </div>
       </div>
     </div>
   );
 }
 
-function SubnetScroll({ pairs, results, onCardClick }) {
+function SubnetScroll({ pairs, results, onCardClick, C }) {
   const gs = pairs.filter(p => results[p.id]?.data?.status==="IN SYNC").length;
   const gd = pairs.filter(p => results[p.id]?.data?.status==="NOT IN SYNC").length;
   return (
     <div style={{ display:"flex", flexDirection:"column", height:"100%" }}>
-      <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:8, flexShrink:0 }}>
-        <span style={{ fontSize:11, color:C.green }}>{gs} synced</span>
-        <span style={{ fontSize:11, color:gd>0?C.red:C.textMuted }}>{gd} drifted</span>
-        <span style={{ fontSize:11, color:C.textMuted }}>{pairs.length} total</span>
+      <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:10, flexShrink:0 }}>
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          <div style={{ width:7, height:7, borderRadius:"50%", background:C.green, boxShadow:`0 0 6px ${C.green}` }} />
+          <span style={{ fontSize:12, color:C.green, fontWeight:600 }}>{gs} synced</span>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          <div style={{ width:7, height:7, borderRadius:"50%", background:gd>0?C.red:C.borderMid }} />
+          <span style={{ fontSize:12, color:gd>0?C.red:C.textMuted, fontWeight:600 }}>{gd} drifted</span>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+          <div style={{ width:7, height:7, borderRadius:"50%", background:C.borderMid }} />
+          <span style={{ fontSize:12, color:C.textMuted, fontWeight:500 }}>{pairs.length} total</span>
+        </div>
       </div>
       <div style={{ flex:1, overflowY:"auto", paddingRight:4 }}>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(175px, 1fr))", gap:8, alignContent:"start" }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill, minmax(185px, 1fr))", gap:10, alignContent:"start" }}>
           {pairs.map(pair => (
-            <ServerCard key={pair.id} pair={pair} result={results[pair.id]} onClick={onCardClick} />
+            <ServerCard key={pair.id} pair={pair} result={results[pair.id]} onClick={onCardClick} C={C} />
           ))}
         </div>
       </div>
@@ -522,28 +618,27 @@ function SubnetScroll({ pairs, results, onCardClick }) {
   );
 }
 
-// ─── Boot / Loading Screen ────────────────────────────────────────────────────
-function BootScreen({ status, error, onRetry }) {
+function BootScreen({ status, error, onRetry, C }) {
   return (
     <div className="boot-screen">
-      <div style={{ width:3, height:40, borderRadius:2, background:`linear-gradient(180deg,${C.accent},#1a4fb5)`, marginBottom:4 }} />
-      <div style={{ fontSize:15, fontWeight:700, letterSpacing:"0.12em", color:C.text }}>EIS SYNC PORTAL</div>
-      <div style={{ fontSize:9, color:C.textMuted, letterSpacing:"0.1em", marginBottom:16 }}>PR / DR SYNCHRONIZATION MONITOR</div>
+      <div style={{ width:4, height:44, borderRadius:2, background:`linear-gradient(180deg,${C.accent},${C.accent}44)`, marginBottom:4 }} />
+      <div style={{ fontSize:16, fontWeight:800, letterSpacing:"0.1em", color:C.text }}>EIS SYNC PORTAL</div>
+      <div style={{ fontSize:11, color:C.textMuted, letterSpacing:"0.08em", fontWeight:500, marginBottom:16 }}>PR / DR SYNCHRONIZATION MONITOR</div>
       {error ? (
-        <div style={{ textAlign:"center", maxWidth:380 }}>
-          <div style={{ background:C.amberBg, border:`1px solid ${C.amberBorder}`, borderRadius:8, padding:"14px 20px", marginBottom:14 }}>
-            <div style={{ fontSize:11, fontWeight:700, color:C.amber, letterSpacing:"0.07em", marginBottom:6 }}>⚠ FAILED TO LOAD SERVER LIST</div>
-            <div style={{ fontSize:12, color:C.textSub, lineHeight:1.6 }}>{error}</div>
-            <div style={{ fontSize:11, color:C.textMuted, marginTop:6 }}>
-              Endpoint: <span style={{ color:C.textSub }}>{GET_ALL_IPS_URL}</span>
+        <div style={{ textAlign:"center", maxWidth:400 }}>
+          <div style={{ background:C.amberBg, border:`1px solid ${C.amberBorder}`, borderRadius:10, padding:"16px 22px", marginBottom:16 }}>
+            <div style={{ fontSize:12, fontWeight:700, color:C.amber, letterSpacing:"0.06em", marginBottom:7 }}>⚠ Failed to Load Server List</div>
+            <div style={{ fontSize:13, color:C.textSub, lineHeight:1.65 }}>{error}</div>
+            <div style={{ fontSize:12, color:C.textMuted, marginTop:7, fontFamily:"'SF Mono', 'Fira Code', monospace" }}>
+              {GET_ALL_IPS_URL}
             </div>
           </div>
-          <button className="btn btn-primary" onClick={onRetry}>RETRY</button>
+          <button className="btn btn-primary" onClick={onRetry}>Retry</button>
         </div>
       ) : (
-        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:10 }}>
-          <Spinner size={28} />
-          <div style={{ fontSize:12, color:C.textSub }}>{status}</div>
+        <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:12 }}>
+          <Spinner size={30} color={C.accent} />
+          <div style={{ fontSize:13, color:C.textSub, fontWeight:500 }}>{status}</div>
         </div>
       )}
     </div>
@@ -552,10 +647,13 @@ function BootScreen({ status, error, onRetry }) {
 
 // ─── Main App ─────────────────────────────────────────────────────────────────
 export default function App() {
-  const [pairs,      setPairs]      = useState(null);   // null = not loaded yet
+  const [isDark, setIsDark] = useState(true);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const C = isDark ? DARK : LIGHT;
+
+  const [pairs,      setPairs]      = useState(null);
   const [bootStatus, setBootStatus] = useState("Fetching server list…");
   const [bootError,  setBootError]  = useState(null);
-
   const [results,    setResults]    = useState({});
   const [modal,      setModal]      = useState(null);
   const [filter,     setFilter]     = useState("all");
@@ -566,7 +664,12 @@ export default function App() {
   const [slideDir,   setSlideDir]   = useState(1);
   const abortRef = useRef(null);
 
-  // ── Fetch server list on mount (and on retry) ─────────────────────────────
+  const toggleTheme = () => {
+    setIsTransitioning(true);
+    setIsDark(v => !v);
+    setTimeout(() => setIsTransitioning(false), 300);
+  };
+
   const fetchServerList = useCallback(async () => {
     setBootError(null);
     setBootStatus("Fetching server list…");
@@ -580,7 +683,6 @@ export default function App() {
       const built = buildPairs(ips);
       if (built.length === 0) throw new Error("No PR/DR pairs could be built from the returned IPs.");
       setPairs(built);
-      // Auto-start sync checks once pairs are ready
       runChecks(built);
     } catch (e) {
       setBootError(e.message);
@@ -589,7 +691,6 @@ export default function App() {
 
   useEffect(() => { fetchServerList(); }, [fetchServerList]);
 
-  // ── Check helpers ─────────────────────────────────────────────────────────
   const updateResult = useCallback((id, patch) => {
     setResults(prev => ({ ...prev, [id]: { ...prev[id], ...patch } }));
   }, []);
@@ -630,9 +731,7 @@ export default function App() {
     setIsRunning(false);
   }
 
-  async function runAll() {
-    if (pairs) await runChecks(pairs);
-  }
+  async function runAll() { if (pairs) await runChecks(pairs); }
 
   function stopAll() {
     abortRef.current?.abort();
@@ -653,17 +752,15 @@ export default function App() {
     setTimeout(() => { setSubnetIdx(idx); setSliding(false); }, 320);
   }
 
-  // ── Render boot screen until pairs loaded ─────────────────────────────────
   if (!pairs) {
     return (
       <>
-        <style>{css}</style>
-        <BootScreen status={bootStatus} error={bootError} onRetry={fetchServerList} />
+        <style>{makeCSS(C, isDark)}</style>
+        <BootScreen status={bootStatus} error={bootError} onRetry={fetchServerList} C={C} />
       </>
     );
   }
 
-  // ── Stats ─────────────────────────────────────────────────────────────────
   const vals       = Object.values(results);
   const total      = pairs.length;
   const checked    = vals.filter(r => r && !r.loading && (r.data||r.error)).length;
@@ -692,30 +789,35 @@ export default function App() {
 
   return (
     <>
-      <style>{css}</style>
-      <div style={{ height:"100vh", display:"flex", flexDirection:"column", overflow:"hidden" }}>
+      <style>{makeCSS(C, isDark)}</style>
+      <div className={isTransitioning ? "theme-transition" : ""} style={{ height:"100vh", display:"flex", flexDirection:"column", overflow:"hidden", background:C.bg }}>
 
-        {/* Header */}
-        <header style={{ background:C.surface, borderBottom:`1px solid ${C.border}`, padding:"0 22px", display:"flex", alignItems:"center", justifyContent:"space-between", height:52, flexShrink:0, gap:16 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:12 }}>
-            <div style={{ width:3, height:24, borderRadius:2, background:`linear-gradient(180deg,${C.accent},#1a4fb5)` }} />
+        {/* ── Header ── */}
+        <header style={{ background:C.headerBg, borderBottom:`1px solid ${C.border}`, padding:"0 22px", display:"flex", alignItems:"center", justifyContent:"space-between", height:56, flexShrink:0, gap:16, boxShadow:`0 1px 0 ${C.border}` }}>
+          <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+            <div style={{ width:4, height:26, borderRadius:2, background:`linear-gradient(180deg,${C.accent},${C.accent}44)` }} />
             <div>
-              <div style={{ fontSize:13, fontWeight:700, letterSpacing:"0.12em", color:C.text }}>EIS SYNC PORTAL</div>
-              <div style={{ fontSize:9, color:C.textMuted, letterSpacing:"0.1em" }}>PR / DR SYNCHRONIZATION MONITOR</div>
+              <div style={{ fontSize:14, fontWeight:800, letterSpacing:"0.08em", color:C.text }}>EIS SYNC PORTAL</div>
+              <div style={{ fontSize:10, color:C.textMuted, letterSpacing:"0.07em", fontWeight:500, marginTop:1 }}>PR / DR SYNCHRONIZATION MONITOR</div>
             </div>
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-            <span style={{ fontSize:10, color:C.textMuted }}>{pairs.length} pairs loaded</span>
-            {checked>0 && <button className="btn btn-csv" onClick={() => downloadCSV(pairs, results)}>DOWNLOAD CSV</button>}
+            <span style={{ fontSize:12, color:C.textMuted, fontWeight:500 }}>{pairs.length} pairs</span>
+            <ThemeToggle isDark={isDark} onToggle={toggleTheme} />
+            {checked > 0 && (
+              <button className="btn btn-csv" onClick={() => downloadCSV(pairs, results)}>
+                ↓ CSV
+              </button>
+            )}
             {isRunning
-              ? <button className="btn btn-stop" onClick={stopAll}>STOP</button>
-              : <button className="btn btn-primary" onClick={runAll}>CHECK ALL SERVERS</button>
+              ? <button className="btn btn-stop" onClick={stopAll}>■ Stop</button>
+              : <button className="btn btn-primary" onClick={runAll}>▶ Check All</button>
             }
           </div>
         </header>
 
-        {/* Stats row */}
-        <div style={{ display:"flex", gap:8, padding:"8px 22px", flexShrink:0, borderBottom:`1px solid ${C.border}` }}>
+        {/* ── Stats row ── */}
+        <div style={{ display:"flex", gap:8, padding:"10px 22px", flexShrink:0, borderBottom:`1px solid ${C.border}`, background:C.surface }}>
           {[
             { label:"TOTAL",       val:total,      color:C.text },
             { label:"CHECKED",     val:checked,    color:C.accent,  pct:total?checked/total*100:0,       pc:C.accent },
@@ -725,48 +827,56 @@ export default function App() {
             { label:"IN PROGRESS", val:inProgress, color:C.textSub },
           ].map(s => (
             <div key={s.label} className="stat">
-              <div style={{ fontSize:9, color:C.textMuted, fontWeight:700, letterSpacing:"0.1em", marginBottom:2 }}>{s.label}</div>
-              <div style={{ fontSize:22, fontWeight:700, color:s.color, lineHeight:1.1 }}>{s.val}</div>
+              <div style={{ fontSize:10, color:C.textMuted, fontWeight:700, letterSpacing:"0.08em", marginBottom:3 }}>{s.label}</div>
+              <div style={{ fontSize:24, fontWeight:800, color:s.color, lineHeight:1.1, letterSpacing:"-0.02em" }}>{s.val}</div>
               {s.pct!==undefined && <div className="pbar"><div className="pfill" style={{ width:`${s.pct}%`, background:s.pc }} /></div>}
             </div>
           ))}
-          <div style={{ display:"flex", flexDirection:"column", justifyContent:"center", gap:4, marginLeft:"auto", flexShrink:0 }}>
-            {[{ color:C.green, label:"In Sync" },{ color:C.red, label:"Out of Sync" },{ color:C.amber, label:"Error" },{ color:C.borderMid, label:"Pending" }].map(l => (
-              <div key={l.label} style={{ display:"flex", alignItems:"center", gap:6 }}>
-                <div style={{ width:7, height:7, borderRadius:"50%", background:l.color, flexShrink:0, boxShadow:l.color!==C.borderMid?`0 0 5px ${l.color}`:"none" }} />
-                <span style={{ fontSize:10, color:C.textSub, whiteSpace:"nowrap" }}>{l.label}</span>
+          <div style={{ display:"flex", flexDirection:"column", justifyContent:"center", gap:5, marginLeft:"auto", flexShrink:0, padding:"4px 8px" }}>
+            {[
+              { color:C.green,     label:"In Sync" },
+              { color:C.red,       label:"Out of Sync" },
+              { color:C.amber,     label:"Error" },
+              { color:C.borderMid, label:"Pending" }
+            ].map(l => (
+              <div key={l.label} style={{ display:"flex", alignItems:"center", gap:7 }}>
+                <div style={{ width:8, height:8, borderRadius:"50%", background:l.color, flexShrink:0, boxShadow:l.color!==C.borderMid?`0 0 6px ${l.color}`:"none" }} />
+                <span style={{ fontSize:11, color:C.textSub, whiteSpace:"nowrap", fontWeight:500 }}>{l.label}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Filter / Search bar */}
-        <div style={{ display:"flex", gap:8, padding:"7px 22px", flexShrink:0, alignItems:"center", flexWrap:"wrap", borderBottom:`1px solid ${C.border}` }}>
-          <input className="srch" type="text" placeholder="Search IP or octet" value={search} onChange={e=>setSearch(e.target.value)} />
+        {/* ── Filter / Search ── */}
+        <div style={{ display:"flex", gap:8, padding:"9px 22px", flexShrink:0, alignItems:"center", flexWrap:"wrap", borderBottom:`1px solid ${C.border}`, background:C.surface }}>
+          <input
+            className="srch" type="text" placeholder="Search IP or octet…"
+            value={search} onChange={e=>setSearch(e.target.value)}
+          />
           <div style={{ display:"flex", gap:4 }}>
-            {[["all","ALL"],["synced","IN SYNC"],["not-synced","OUT OF SYNC"],["error","ERROR"],["pending","PENDING"]].map(([v,l]) => (
+            {[["all","All"],["synced","In Sync"],["not-synced","Out of Sync"],["error","Error"],["pending","Pending"]].map(([v,l]) => (
               <button key={v} className={`fp${filter===v?" on":""}`} onClick={() => setFilter(v)}>{l}</button>
             ))}
           </div>
-          <span style={{ marginLeft:"auto", fontSize:11, color:C.textMuted, flexShrink:0 }}>
+          <span style={{ marginLeft:"auto", fontSize:12, color:C.textMuted, flexShrink:0, fontWeight:500 }}>
             {getFiltered(activeGroup).length} pairs shown — click any card for details
           </span>
         </div>
 
-        {/* Subnet Carousel header */}
-        <div style={{ display:"flex", alignItems:"center", gap:0, padding:"0 22px", height:48, flexShrink:0, borderBottom:`1px solid ${C.border}`, background:C.surface }}>
-          <button className="car-btn" disabled={subnetIdx === 0 || sliding} onClick={() => slideToSubnet(subnetIdx - 1)} style={{ marginRight:14 }}>{"<"}</button>
+        {/* ── Subnet carousel header ── */}
+        <div style={{ display:"flex", alignItems:"center", gap:0, padding:"0 22px", height:50, flexShrink:0, borderBottom:`1px solid ${C.border}`, background:C.headerBg }}>
+          <button className="car-btn" disabled={subnetIdx === 0 || sliding} onClick={() => slideToSubnet(subnetIdx - 1)} style={{ marginRight:14 }}>‹</button>
           <div style={{ flex:1, overflow:"hidden", position:"relative", height:"100%", display:"flex", alignItems:"center" }}>
             <div style={{
               display:"flex",
-              transform: sliding ? `translateX(${slideDir > 0 ? "-60px" : "60px"})` : "translateX(0)",
+              transform: sliding ? `translateX(${slideDir > 0 ? "-50px" : "50px"})` : "translateX(0)",
               opacity: sliding ? 0 : 1,
               transition: `transform 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.32s ease`,
               alignItems:"center", gap:14,
             }}>
-              <span style={{ fontSize:12, fontWeight:700, color:C.accent, letterSpacing:"0.1em" }}>{activeGroup.label}</span>
-              <span style={{ fontSize:11, color:C.textMuted }}>{activeGroup.sublabel}</span>
-              <span style={{ fontSize:11, color:C.textMuted }}>— {pairs.filter(p=>p.pr.startsWith(activeGroup.prefix)).length} pairs</span>
+              <span style={{ fontSize:13, fontWeight:800, color:C.accent, letterSpacing:"0.08em" }}>{activeGroup.label}</span>
+              <span style={{ fontSize:12, color:C.textMuted, fontWeight:500, fontFamily:"'SF Mono', 'Fira Code', monospace" }}>{activeGroup.sublabel}</span>
+              <span style={{ fontSize:12, color:C.textMuted, fontWeight:500 }}>— {pairs.filter(p=>p.pr.startsWith(activeGroup.prefix)).length} pairs</span>
             </div>
           </div>
           <div style={{ display:"flex", alignItems:"center", gap:6, marginRight:14 }}>
@@ -774,11 +884,11 @@ export default function App() {
               <button key={g.id} className={`subnet-dot ${i===subnetIdx?"on":"off"}`} onClick={() => slideToSubnet(i)} title={g.label} />
             ))}
           </div>
-          <button className="car-btn" disabled={subnetIdx === GROUPS.length - 1 || sliding} onClick={() => slideToSubnet(subnetIdx + 1)}>{">"}</button>
+          <button className="car-btn" disabled={subnetIdx === GROUPS.length - 1 || sliding} onClick={() => slideToSubnet(subnetIdx + 1)}>›</button>
         </div>
 
-        {/* Carousel Track */}
-        <div style={{ flex:1, minHeight:0, overflow:"hidden", position:"relative" }}>
+        {/* ── Carousel track ── */}
+        <div style={{ flex:1, minHeight:0, overflow:"hidden", position:"relative", background:C.bg }}>
           <div style={{
             display:"flex",
             width:`${GROUPS.length * 100}%`,
@@ -789,7 +899,7 @@ export default function App() {
             {GROUPS.map((group) => {
               const fp = getFiltered(group);
               return (
-                <div key={group.id} style={{ width:`${100 / GROUPS.length}%`, height:"100%", padding:"10px 22px 12px", display:"flex", flexDirection:"column", flexShrink:0 }}>
+                <div key={group.id} style={{ width:`${100 / GROUPS.length}%`, height:"100%", padding:"12px 22px 14px", display:"flex", flexDirection:"column", flexShrink:0 }}>
                   {fp.length > 0
                     ? <SubnetScroll
                         key={group.id + filter + search}
@@ -799,8 +909,9 @@ export default function App() {
                           if (!r) { checkPair(p, new AbortController().signal); return; }
                           setModal({ pair:p, result:r });
                         }}
+                        C={C}
                       />
-                    : <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:C.textMuted, fontSize:13, letterSpacing:"0.05em" }}>
+                    : <div style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", color:C.textMuted, fontSize:14, fontWeight:500 }}>
                         No servers match the current filter
                       </div>
                   }
@@ -810,7 +921,7 @@ export default function App() {
           </div>
         </div>
 
-        {modal && <DetailModal pair={modal.pair} result={modal.result} onClose={() => setModal(null)} />}
+        {modal && <DetailModal pair={modal.pair} result={modal.result} onClose={() => setModal(null)} C={C} />}
       </div>
     </>
   );
